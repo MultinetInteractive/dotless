@@ -11,7 +11,7 @@ namespace dotless.CompatibilityTests
     [TestFixture]
     public class LessJsCompatiblity
     {
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void FixtureSetUp()
         {
             DeleteDifferencesDirectory();
@@ -25,21 +25,21 @@ namespace dotless.CompatibilityTests
 
             var css = Transform(less, path);
 
-            if (CompareOutput(css, expectedCss) != 0)
+            if (CompareOutput(css, expectedCss))
             {
                 Dump(path.DebugLess, less);
                 Dump(path.ActualCss, css);
                 Dump(path.ExpectedCss, expectedCss);
             }
 
-            Assert.That(css, Is.EqualTo(expectedCss).Using<string>(CompareOutput));
+            Assert.That(css, Is.EqualTo(expectedCss)); //.Using<string>(CompareOutput)
         }
 
-        private int CompareOutput(string actual, string expected)
+        private bool CompareOutput(string actual, string expected)
         {
             // TODO(yln): compare this more elegantly, e.g., ignore formatting?
             // Do we want to reach formatting compatibility?
-            return string.Compare(actual, expected, StringComparison.Ordinal);
+            return string.Compare(actual, expected, StringComparison.Ordinal) == 0;
         }
 
         private string Transform(string less, TestPath path)

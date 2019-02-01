@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace dotless.Test
 {
@@ -9,6 +9,7 @@ namespace dotless.Test
     using Moq;
     using NUnit.Framework;
     using System.IO;
+    using dotless.Core.Abstractions;
 
     public class HttpFixtureBase
     {
