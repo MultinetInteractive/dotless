@@ -3,6 +3,10 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>dotless.Core</RootNamespace>
+    <PackageId>dotless.Core.Multinet</PackageId>
+    <Company>Multinet</Company>
+    <Authors>Multinet</Authors>
+    <Description>Intern version av dotless med stöd för merge taggar från less samt NetStandard 2.0</Description>
   </PropertyGroup>
 
   <ItemGroup>
