@@ -1,3 +1,5 @@
+﻿using dotless.Core.configuration;
+
 namespace dotless.Core.Loggers
 {
     using Response;
@@ -10,6 +12,8 @@ namespace dotless.Core.Loggers
         {
             Response = response;
         }
+
+        public AspResponseLogger(DotlessConfiguration config, IResponse response) : this(config.LogLevel, response) { }
 
         protected override void Log(string message)
         {

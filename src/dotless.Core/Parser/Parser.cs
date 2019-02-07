@@ -1,4 +1,4 @@
-// ReSharper disable InconsistentNaming
+﻿// ReSharper disable InconsistentNaming
 
 namespace dotless.Core.Parser
 {
@@ -126,6 +126,12 @@ namespace dotless.Core.Parser
             Importer = importer;
             Debug = debug;
             Tokenizer = new Tokenizer(optimization);
+        }
+
+        public Parser(dotless.Core.configuration.DotlessConfiguration config, IStylizer stylizer, IImporter importer)
+            : this(config.Optimization, stylizer, importer, config.Debug)
+        {
+
         }
 
         public Ruleset Parse(string input, string fileName)

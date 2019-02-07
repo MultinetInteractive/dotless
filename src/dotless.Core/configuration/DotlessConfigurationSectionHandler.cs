@@ -1,10 +1,10 @@
-namespace dotless.Core.configuration
+﻿namespace dotless.Core.configuration
 {
     using System;
     using System.Configuration;
     using System.Xml;
 
-    public class DotlessConfigurationSectionHandler : IConfigurationSectionHandler
+    public class DotlessConfigurationSectionHandler 
     {
         public object Create(object parent, object configContext, XmlNode section)
         {

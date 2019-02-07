@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.329
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotless.Core", "dotless.Core\dotless.Core.csproj", "{D7A24E58-68D0-4B10-A324-EA33C822FA56}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotless.Core", "dotless.Core\dotless.Core.csproj", "{D7A24E58-68D0-4B10-A324-EA33C822FA56}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotless.Compiler", "dotless.Compiler\dotless.Compiler.csproj", "{D0CE2A3A-5086-494A-A967-5D54B41BBC64}"
 EndProject

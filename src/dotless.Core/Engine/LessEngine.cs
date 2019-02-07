@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using dotless.Core.Parser;
 using dotless.Core.Parser.Tree;
 using dotless.Core.Plugins;
@@ -34,6 +34,11 @@ namespace dotless.Core
             set { Parser.CurrentDirectory = value; }
         }
 
+        public LessEngine(Parser.Parser parser, ILogger logger, dotless.Core.configuration.DotlessConfiguration config)
+            : this(parser, logger, config.MinifyOutput, config.Debug, config.DisableVariableRedefines, config.DisableColorCompression, config.KeepFirstSpecialComment, config.Plugins)
+        {
+        }
+
         public LessEngine(Parser.Parser parser, ILogger logger, bool compress, bool debug, bool disableVariableRedefines, bool disableColorCompression, bool keepFirstSpecialComment, bool strictMath, IEnumerable<IPluginConfigurator> plugins)
         {
             Parser = parser;
@@ -57,6 +62,11 @@ namespace dotless.Core
 
         public LessEngine(Parser.Parser parser, ILogger logger, bool compress, bool debug, bool disableVariableRedefines)
             : this(parser, logger, compress, debug, disableVariableRedefines, false, false, null)
+        {
+        }
+
+        public LessEngine(Parser.Parser parser, ILogger logger)
+            : this(parser, logger, false, false, false, false, false, null)
         {
         }
 

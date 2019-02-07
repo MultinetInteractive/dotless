@@ -1,4 +1,4 @@
-using System.Threading;
+﻿using System.Threading;
 
 namespace dotless.Core.Parser.Functions
 {

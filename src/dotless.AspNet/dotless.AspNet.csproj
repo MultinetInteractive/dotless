@@ -34,12 +34,18 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>..\dotless-open-source.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Extensions.DependencyInjection, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.2.2.0\lib\net461\Microsoft.Extensions.DependencyInjection.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.2.2.0\lib\netstandard2.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Practices.ServiceLocation">
       <HintPath>..\..\lib\Pandora\Microsoft.Practices.ServiceLocation.dll</HintPath>
     </Reference>
@@ -71,7 +77,6 @@
     <Compile Include="Loggers\AspNetTraceLogger.cs" />
     <Compile Include="Loggers\AspResponseLogger.cs" />
     <Compile Include="Parameters\QueryStringParameterSource.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Response\CachedCssResponse.cs" />
     <Compile Include="Response\CssResponse.cs" />
     <Compile Include="Response\IResponse.cs" />
@@ -83,6 +88,12 @@
       <Project>{D7A24E58-68D0-4B10-A324-EA33C822FA56}</Project>
       <Name>dotless.Core</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -1,4 +1,6 @@
-﻿namespace dotless.Core
+﻿using Microsoft.Extensions.DependencyInjection;
+
+namespace dotless.Core
 {
     using System.Web;
     using System.Web.SessionState;
@@ -13,7 +15,7 @@
         {
             try
             {
-                var handler = Container.GetInstance<HandlerImpl>();
+                var handler = Container.GetRequiredService<HandlerImpl>();
 
                 handler.Execute();
             }

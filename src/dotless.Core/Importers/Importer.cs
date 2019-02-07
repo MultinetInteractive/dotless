@@ -1,4 +1,4 @@
-namespace dotless.Core.Importers
+﻿namespace dotless.Core.Importers
 {
     using System;
     using System.Collections.Generic;
@@ -454,10 +454,15 @@ namespace dotless.Core.Importers
 
             loader._fileContents = fileReader.GetBinaryFileContents(assemblyName);
 
-            var domainSetup = new AppDomainSetup();
-            domainSetup.ApplicationBase = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var domain = AppDomain.CreateDomain("LoaderDomain", null, domainSetup);
-            domain.DoCallBack(loader.LoadResource);
+            var domain = AppDomain.CreateDomain("LoaderDomain");
+            var assembly = domain.Load(loader._fileContents);
+
+            using (var stream = assembly.GetManifestResourceStream(loader._resourceName))
+                using (var reader = new StreamReader(stream))
+                {
+                    loader._resourceContent = reader.ReadToEnd();
+                }
+
             AppDomain.Unload(domain);
         }
 

@@ -1,3 +1,5 @@
+﻿using Microsoft.Extensions.DependencyInjection;
+
 namespace dotless.Test.Config
 {
     using System;
@@ -50,7 +52,7 @@ namespace dotless.Test.Config
 
             var serviceLocator = new ContainerFactory().GetContainer(config);
 
-            var cache = serviceLocator.GetInstance<ICache>();
+            var cache = serviceLocator.GetRequiredService<ICache>();
 
             Assert.That(cache, Is.TypeOf<InMemoryCache>());
         }
@@ -62,7 +64,7 @@ namespace dotless.Test.Config
 
             var serviceLocator = new ContainerFactory().GetContainer(config);
 
-            var logger = serviceLocator.GetInstance<ILogger>();
+            var logger = serviceLocator.GetRequiredService<ILogger>();
 
             Assert.That(logger, Is.TypeOf<DummyLogger>());
         }
@@ -74,7 +76,7 @@ namespace dotless.Test.Config
 
             var serviceLocator = new ContainerFactory().GetContainer(config);
 
-            var source = serviceLocator.GetInstance<IFileReader>();
+            var source = serviceLocator.GetRequiredService<IFileReader>();
 
             Assert.That(source, Is.TypeOf<DummyFileReader>());
         }
@@ -86,7 +88,7 @@ namespace dotless.Test.Config
 
             var serviceLocator = new ContainerFactory().GetContainer(config);
 
-            var parser = serviceLocator.GetInstance<Parser>();
+            var parser = serviceLocator.GetRequiredService<Parser>();
 
             Assert.That(parser.Tokenizer.Optimization, Is.EqualTo(7));
         }
@@ -98,7 +100,7 @@ namespace dotless.Test.Config
 
             var serviceLocator = new ContainerFactory().GetContainer(config);
 
-            var logger = serviceLocator.GetInstance<ILogger>();
+            var logger = serviceLocator.GetRequiredService<ILogger>();
 
             Assert.That(logger, Is.TypeOf<ConsoleLogger>());
 
@@ -110,6 +112,8 @@ namespace dotless.Test.Config
         public class DummyLogger : Logger
         {
             public DummyLogger(LogLevel level) : base(level) { }
+
+            public DummyLogger(DotlessConfiguration config) : base(config.LogLevel) { }
 
             protected override void Log(string message) { }
         }
