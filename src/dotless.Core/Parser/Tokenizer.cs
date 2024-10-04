@@ -475,7 +475,7 @@ namespace dotless.Core.Parser
 
         private class Chunk
         {
-            private StringBuilder _builder;
+            private MemList _builder;
 
             public Chunk(ReadOnlyMemory<char> val)
             {
@@ -491,7 +491,7 @@ namespace dotless.Core.Parser
 
             public Chunk()
             {
-                _builder = new StringBuilder();
+                _builder = new MemList();
                 Type = ChunkType.Text;
             }
 
@@ -503,12 +503,12 @@ namespace dotless.Core.Parser
 
             public void Append(ReadOnlyMemory<char> str)
             {
-                _builder.Append(str);
+                _builder.Add(str);
             }
 
             public void Append(char c)
             {
-                _builder.Append(c);
+                _builder.Add(new[] { c });
             }
 
             private static Chunk ReadyForText(List<Chunk> chunks)
@@ -543,7 +543,7 @@ namespace dotless.Core.Parser
 
             public static ReadOnlyMemory<char> CommitAll(List<Chunk> chunks)
             {
-                StringBuilder all = new StringBuilder();
+                MemList all = new MemList();
                 foreach(Chunk chunk in chunks)
                 {
                     if  (chunk._builder != null)
@@ -553,7 +553,7 @@ namespace dotless.Core.Parser
                         chunk.Value = val;
                     }
 
-                    all.Append(chunk.Value);
+                    all.Add(chunk.Value);
                 }
                 return all.ToString().AsMemory();
             }

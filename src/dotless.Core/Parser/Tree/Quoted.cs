@@ -73,13 +73,7 @@ using System.Text;
 
         public override string ToString()
         {
-            var sb = new StringBuilder();
-            foreach (var m in RenderString())
-            {
-                sb.Append(m);
-            }
-
-            return sb.ToString();
+            return RenderString().ToString();
         }
 
         public override Node Evaluate(Env env)

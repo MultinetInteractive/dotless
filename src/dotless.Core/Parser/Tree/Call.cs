@@ -54,14 +54,8 @@ namespace dotless.Core.Parser.Tree
                 .Append(")");
 
             var css = env.Output.Pop();
-            var sb = new StringBuilder();
 
-            foreach(var m in css)
-            {
-                sb.Append(m);
-            }
-
-            return new TextNode(sb.ToString()).ReducedFrom<Node>(this);
+            return new TextNode(css.ToString()).ReducedFrom<Node>(this);
         }
 
         public override void Accept(IVisitor visitor)
