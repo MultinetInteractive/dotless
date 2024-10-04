@@ -191,21 +191,52 @@
         /// </summary>
         public Output TrimLeft(char? c)
         {
-            if (!c.HasValue)
+            while(Builder.Count > 0)
             {
-                return this;
+                Builder[0] = TrimLeft(Builder[0], c);
+
+                if (Builder[0].Length > 0)
+                    break;
+
+                Builder.RemoveAt(0);
             }
-
-            int length = Builder.Count;
-
-            if (length == 0)
-            {
-                return this;
-            }
-
-            Builder[0] = Builder[0].ToString().TrimStart(c.Value).AsMemory();
             
             return this;
+        }
+
+        private ReadOnlyMemory<char> TrimLeft(ReadOnlyMemory<char> input, char? c)
+        {
+            int trimLength = 0;
+            if (c.HasValue)
+            {
+                while (input.Length > trimLength)
+                {
+                    if (input.Span[trimLength] == c.Value)
+                    {
+                        trimLength++;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                while (input.Length > trimLength)
+                {
+                    if (char.IsWhiteSpace(input.Span[trimLength]))
+                    {
+                        trimLength++;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return input.Slice(trimLength);
         }
 
         /// <summary>
@@ -213,23 +244,53 @@
         /// </summary>
         public Output TrimRight(char? c)
         {
-            if (!c.HasValue)
+            while (Builder.Count > 0)
             {
-                return this;
+                var lastIndex = Builder.Count - 1;
+                Builder[lastIndex] = TrimRight(Builder[lastIndex], c);
+
+                if (Builder[lastIndex].Length > 0)
+                    break;
+
+                Builder.RemoveAt(lastIndex);
             }
-
-            int length = Builder.Count;
-
-            if (length == 0)
-            {
-                return this;
-            }
-
-            var lastIndex = Builder.Count-1;
-
-            Builder[lastIndex] = Builder[lastIndex].ToString().TrimEnd(c.Value).AsMemory();
 
             return this;
+        }
+
+        private ReadOnlyMemory<char> TrimRight(ReadOnlyMemory<char> input, char? c)
+        {
+            int lastIndex = input.Length-1;
+            if (c.HasValue)
+            {
+                while (lastIndex >= 0)
+                {
+                    if (input.Span[lastIndex] == c.Value)
+                    {
+                        lastIndex--;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                while (lastIndex >= 0)
+                {
+                    if (char.IsWhiteSpace(input.Span[lastIndex]))
+                    {
+                        lastIndex--;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return input.Slice(0, lastIndex+1);
         }
 
 
