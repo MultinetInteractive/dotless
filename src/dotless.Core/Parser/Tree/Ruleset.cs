@@ -494,7 +494,7 @@ namespace dotless.Core.Parser.Tree
 
                         env.Output.Append(env.Compress ? "{" : " {\n  ");
 
-                        env.Output.AppendMany(rules.ConvertAll(stringBuilder => stringBuilder.ToString()).Distinct(),
+                        env.Output.AppendMany(rules,
                             env.Compress ? "".AsMemory() : "\n  ".AsMemory());
 
                         if (env.Compress) {
