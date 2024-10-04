@@ -1,5 +1,7 @@
-namespace dotless.Core.Test.Specs
+﻿namespace dotless.Core.Test.Specs
 {
+    using System;
+    using dotless.Core.Exceptions;
     using NUnit.Framework;
 
     public class RulesetsFixture : SpecFixtureBase
@@ -253,7 +255,6 @@ a {
         }
 
         [Test]
-        [ExpectedException]
         public void NotSetVariableWithMultiplcation()
         {
             var input = @"
@@ -263,7 +264,7 @@ a {
   margin: @test * 2px;
 }";
             var expected = @"";
-            AssertLess(input, expected);
+            Assert.Throws<ParserException>(() => AssertLess(input, expected));
         }
 
         [Test]
