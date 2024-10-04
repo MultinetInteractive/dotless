@@ -227,7 +227,7 @@
 
             var lastIndex = Builder.Count-1;
 
-            Builder[lastIndex] = Builder[lastIndex].ToString().TrimStart(c.Value).AsMemory();
+            Builder[lastIndex] = Builder[lastIndex].ToString().TrimEnd(c.Value).AsMemory();
 
             return this;
         }
