@@ -22,6 +22,7 @@ namespace dotless.Core.Parser.Tree
         {
             get { return Value is Value && ((Value) Value).Important == "!important"; }
         }
+        public bool InterpolatedName { get; set; }
 
         public Rule(string name, Node value) : this(name, value, false)
         { 
@@ -46,7 +47,7 @@ namespace dotless.Core.Parser.Tree
                 throw new ParsingException("No value found for rule " + Name, Location);
             }
 
-            var rule = new Rule(Name, Value.Evaluate(env)).ReducedFrom<Rule>(this);
+            var rule = new Rule(EvaluateName(env), Value.Evaluate(env)).ReducedFrom<Rule>(this);
             rule.Merge = Merge;
             rule.IsSemiColonRequired = this.IsSemiColonRequired;
             rule.PostNameComments = this.PostNameComments;
@@ -54,6 +55,25 @@ namespace dotless.Core.Parser.Tree
             env.Rule = null;
 
             return rule;
+        }
+
+        private string EvaluateName(Env env) {
+            if (!InterpolatedName) {
+                return Name;
+            }
+
+            var evaluatedVariable = env.FindVariable(Name).Evaluate(env) as Rule;
+            if (evaluatedVariable == null) {
+                throw new ParsingException("Invalid variable value for property name", Location);
+            }
+
+            var evaluatedValue = evaluatedVariable.Value as Keyword;
+
+            if (evaluatedValue == null) {
+                throw new ParsingException("Invalid variable value for property name", Location);
+            }
+
+            return evaluatedValue.ToCSS(env);
         }
 
         protected override Node CloneCore() {

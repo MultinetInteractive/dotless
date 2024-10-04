@@ -1,3 +1,5 @@
+using System.Web;
+
 namespace dotless.Core.Loggers
 {
     using Response;
@@ -6,6 +8,11 @@ namespace dotless.Core.Loggers
     {
         public IResponse Response { get; set; }
 
+        public AspResponseLogger(dotless.Core.configuration.DotlessConfiguration config, IResponse response)
+            : this(config.LogLevel, response)
+        {
+        }
+
         public AspResponseLogger(LogLevel level, IResponse response) : base(level)
         {
             Response = response;
@@ -13,7 +20,10 @@ namespace dotless.Core.Loggers
 
         protected override void Log(string message)
         {
-            Response.WriteCss(message);
+            if (HttpContext.Current.Request.IsLocal)
+            {
+                Response.WriteCss(message);    
+            }
         }
     }
 }

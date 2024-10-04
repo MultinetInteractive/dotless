@@ -538,7 +538,7 @@ namespace dotless.Core.Parser
 
             var index = parser.Tokenizer.Location.Index;
 
-            var value = parser.Tokenizer.Match(@"([+-]?[0-9]*\.?[0-9]+)(px|%|em|pc|ex|in|deg|s|ms|pt|cm|mm|ch|rem|vw|vh|vmin|vm|vmax|grad|rad|fr|gr|Hz|kHz|dpi|dpcm|dppx)?", true);
+            var value = parser.Tokenizer.Match(@"([+-]?[0-9]*\.?[0-9]+)(px|%|em|pc|ex|in|deg|s|ms|pt|cm|mm|ch|rem|vw|vh|vmin|vm(ax)?|grad|rad|fr|gr|Hz|kHz|dpi|dpcm|dppx)?", true);
 
             if (value)
                 return NodeProvider.Number(value[1], value[2], parser.Tokenizer.GetNodeLocation(index));
@@ -1211,11 +1211,18 @@ namespace dotless.Core.Parser
 
             Variable variable = null;
             string name = Property(parser);
+            bool interpolatedName = false;
 
             if (string.IsNullOrEmpty(name)) {
                 variable = Variable(parser);
                 if (variable != null) {
                     name = variable.Name;
+                } else {
+                    var interpolation = InterpolatedVariable(parser);
+                    if (interpolation != null) {
+                        interpolatedName = true;
+                        name = interpolation.Name;
+                    }
                 }
             }
 
@@ -1260,6 +1267,10 @@ namespace dotless.Core.Parser
 
                     var rule = NodeProvider.Rule(name, value,
                         parser.Tokenizer.GetNodeLocation(memo.TokenizerLocation.Index));
+                    if (interpolatedName) {
+                        rule.InterpolatedName = true;
+                        rule.Variable = false;
+                    }
                     rule.PostNameComments = postNameComments;
                     PopComments();
                     return rule;
