@@ -18,7 +18,7 @@ namespace dotless.Core.Test.Unit.Parser
             var input = ".no-semi-colon { border: 2px solid white; }";
 
             var parser = new Core.Parser.Parser();
-            var ruleset = parser.Parse(input, "");
+            var ruleset = parser.Parse(input.AsMemory(), "");
 
             var firstRuleset = (Ruleset)ruleset.Rules[0];
             var firstRule = (Rule)firstRuleset.Rules[0];

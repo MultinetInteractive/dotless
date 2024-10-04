@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using dotless.Core.Exceptions;
 
 namespace dotless.Core.Parser.Tree
@@ -395,7 +395,7 @@ namespace dotless.Core.Parser.Tree
                 .Append(env.Compress ? "{" : " {\n")
 
                 .Push()
-                .AppendMany(Rules, "\n")
+                .AppendMany(Rules, "\n".AsMemory())
                 .Trim()
                 .Indent(env.Compress ? 0 : 2)
                 .PopAndAppend();
@@ -410,7 +410,7 @@ namespace dotless.Core.Parser.Tree
 
         public virtual void AppendCSS(Env env, Context context)
         {
-            var rules = new List<StringBuilder>(); // node.Ruleset instances
+            var rules = new List<MemList>(); // node.Ruleset instances
             int nonCommentRules = 0;
             var paths = new Context(); // Current selectors
 
@@ -487,7 +487,7 @@ namespace dotless.Core.Parser.Tree
             // Otherwise, only output if this ruleset has rules.
             if (!IsReference) {
                 if (IsRoot) {
-                    env.Output.AppendMany(rules, env.Compress ? "" : "\n");
+                    env.Output.AppendMany(rules, env.Compress ? "".AsMemory() : "\n".AsMemory());
                 } else {
                     if (nonCommentRules > 0) {
                         paths.AppendCSS(env);
@@ -495,7 +495,7 @@ namespace dotless.Core.Parser.Tree
                         env.Output.Append(env.Compress ? "{" : " {\n  ");
 
                         env.Output.AppendMany(rules.ConvertAll(stringBuilder => stringBuilder.ToString()).Distinct(),
-                            env.Compress ? "" : "\n  ");
+                            env.Compress ? "".AsMemory() : "\n  ".AsMemory());
 
                         if (env.Compress) {
                             env.Output.TrimRight(';');

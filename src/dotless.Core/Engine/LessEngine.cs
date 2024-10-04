@@ -77,6 +77,11 @@ namespace dotless.Core
 
         public string TransformToCss(string source, string fileName)
         {
+            return TransformToCss(source.AsMemory(), fileName);
+        }
+
+        public string TransformToCss(ReadOnlyMemory<char> source, string fileName)
+        {
             try
             {
                 Parser.StrictMath = StrictMath;

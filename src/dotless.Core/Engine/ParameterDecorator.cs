@@ -31,7 +31,7 @@ namespace dotless.Core
             foreach (var parameter in parameters)
             {
                 sb.AppendLine();
-                var variableDeclaration = string.Format("@{0}: {1};", parameter.Key, parameter.Value);
+                var variableDeclaration = string.Format("@{0}: {1};", parameter.Key, parameter.Value).AsMemory();
 
                 try
                 {

@@ -230,7 +230,7 @@
 
         public string Evaluate(string input, Parser parser, out TestLogger testLogger, string filename)
         {
-            var tree = parser.Parse(input.Trim(), filename);
+            var tree = parser.Parse(input.Trim().AsMemory(), filename);
             var env = DefaultEnv();
             env.Parser = parser;
             env.Logger = testLogger = new TestLogger(LogLevel.Info);

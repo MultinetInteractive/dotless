@@ -5,6 +5,7 @@
     using System.Linq;
     using System.Collections.Generic;
     using Plugins;
+    using System;
 
     public class Expression : Node
     {
@@ -42,7 +43,7 @@
 
         public override void AppendCSS(Env env)
         {
-            env.Output.AppendMany(Value, IsExpressionList ? ", " : " ");
+            env.Output.AppendMany(Value, IsExpressionList ? ", ".AsMemory() : " ".AsMemory());
         }
 
         public override void Accept(IVisitor visitor)

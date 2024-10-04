@@ -1,8 +1,9 @@
-using System;
+﻿using System;
 
 namespace dotless.Core.Parser.Tree
 {
     using System.Linq;
+    using System.Text;
     using Infrastructure;
     using Infrastructure.Nodes;
     using Plugins;
@@ -49,12 +50,18 @@ namespace dotless.Core.Parser.Tree
             env.Output
                 .Append(Name)
                 .Append("(")
-                .AppendMany(args, env.Compress ? "," : ", ")
+                .AppendMany(args, env.Compress ? ",".AsMemory() : ", ".AsMemory())
                 .Append(")");
 
             var css = env.Output.Pop();
+            var sb = new StringBuilder();
 
-            return new TextNode(css.ToString()).ReducedFrom<Node>(this);
+            foreach(var m in css)
+            {
+                sb.Append(m);
+            }
+
+            return new TextNode(sb.ToString()).ReducedFrom<Node>(this);
         }
 
         public override void Accept(IVisitor visitor)

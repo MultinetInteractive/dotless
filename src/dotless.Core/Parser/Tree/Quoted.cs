@@ -1,9 +1,13 @@
-﻿namespace dotless.Core.Parser.Tree
+﻿using System;
+
+namespace dotless.Core.Parser.Tree
 {
     using System.Text.RegularExpressions;
     using Infrastructure;
     using Infrastructure.Nodes;
 using System.Text;
+    using System.Collections.Generic;
+    using dotless.Core.Utils;
 
     public class Quoted : TextNode
     {
@@ -48,22 +52,34 @@ using System.Text;
                 .Append(RenderString());
         }
 
-        public StringBuilder RenderString()
+        public MemList RenderString()
         {
             if (Escaped)
             {
-                return new StringBuilder(UnescapeContents());
+                return new MemList() { UnescapeContents().AsMemory() };
             }
 
-            return new StringBuilder()
-                .Append(Quote)
-                .Append(Value)
-                .Append(Quote);
+            var list = new MemList();
+
+            if (Quote.HasValue)
+                list.Add(new[] { Quote.Value });
+            list.Add(Value.AsMemory());
+
+            if (Quote.HasValue)
+                list.Add(new[] { Quote.Value });
+
+            return list;
         }
 
         public override string ToString()
         {
-            return RenderString().ToString();
+            var sb = new StringBuilder();
+            foreach (var m in RenderString())
+            {
+                sb.Append(m);
+            }
+
+            return sb.ToString();
         }
 
         public override Node Evaluate(Env env)

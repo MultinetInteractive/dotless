@@ -25,7 +25,7 @@
             int lineNumber, position;
             GetLineNumber(location, out lineNumber, out position);
 
-            var lines = input.Split('\n');
+            var lines = input.ToString().Split('\n');
 
             FileName = location.FileName;
             Message = error;
@@ -52,10 +52,17 @@
                 index = input.Length;
             }
 
-            var first = input.Substring(0, index);
+            var first = input.Slice(0, index);
 
-            var start = first.LastIndexOf('\n') + 1;
-            lineNumber = first.Count(c => c == '\n');
+            var start = first.Span.LastIndexOf('\n') + 1;
+            lineNumber = 0;
+
+            foreach(var c in first.Span)
+            {
+                if (c == '\n')
+                    lineNumber++;
+            }
+
             position = index - start;
         }
 

@@ -32,9 +32,9 @@
 
         public override void AppendCSS(Env env)
         {
-            var separator = Merge;
+            var separator = Merge.AsMemory();
             if(env.Compress && Merge.Length > 1) 
-                separator = separator.Substring(0, 1);
+                separator = separator.Slice(0, 1);
             env.Output.AppendMany(Values, separator);
  
             if  (!string.IsNullOrEmpty(Important)) 

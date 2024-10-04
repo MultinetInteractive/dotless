@@ -5,10 +5,10 @@
     public class NodeLocation
     {
         public int Index { get; set; }
-        public string Source { get; set; }
+        public ReadOnlyMemory<char> Source { get; set; }
         public string FileName { get; set; }
 
-        public NodeLocation(int index, string source, string filename)
+        public NodeLocation(int index, ReadOnlyMemory<char> source, string filename)
         {
             Index = index;
             Source = source;

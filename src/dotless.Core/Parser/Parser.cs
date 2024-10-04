@@ -1,7 +1,8 @@
-// ReSharper disable InconsistentNaming
+﻿// ReSharper disable InconsistentNaming
 
 namespace dotless.Core.Parser
 {
+    using System;
     using Exceptions;
     using Importers;
     using Infrastructure;
@@ -134,7 +135,7 @@ namespace dotless.Core.Parser
 
         }
 
-        public Ruleset Parse(string input, string fileName)
+        public Ruleset Parse(ReadOnlyMemory<char> input, string fileName)
         {
             Ruleset root;
             FileName = fileName;

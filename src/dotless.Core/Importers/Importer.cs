@@ -1,4 +1,4 @@
-namespace dotless.Core.Importers
+﻿namespace dotless.Core.Importers
 {
     using System;
     using System.Collections.Generic;
@@ -288,7 +288,7 @@ namespace dotless.Core.Importers
                 {
                     Imports.Add(file);
                 }
-                import.InnerRoot = Parser().Parse(contents, lessPath);
+                import.InnerRoot = Parser().Parse(contents.AsMemory(), lessPath);
             }
             catch
             {

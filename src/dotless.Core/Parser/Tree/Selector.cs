@@ -7,6 +7,7 @@ namespace dotless.Core.Parser.Tree
     using System.Collections.Generic;
 	using System.Linq;
     using Plugins;
+    using System.Text;
 
     public class Selector : Node
     {
@@ -82,7 +83,7 @@ namespace dotless.Core.Parser.Tree
                 return evaluatedSelector;
             }
 
-            Parser.Tokenizer.SetupInput(evaluatedSelector.ToCSS(env), "");
+            Parser.Tokenizer.SetupInput(evaluatedSelector.ToCSS(env).AsMemory(), "");
 
             var result = new NodeList<Selector>();
             Selector selector;
@@ -110,7 +111,8 @@ namespace dotless.Core.Parser.Tree
                 env.Output.Append(' ');
 
             env.Output.Append(Elements);
-            env.Output.Append(env.Output.Pop().ToString());
+
+            env.Output.Append(env.Output.Pop());
         }
 
         public override void Accept(IVisitor visitor)

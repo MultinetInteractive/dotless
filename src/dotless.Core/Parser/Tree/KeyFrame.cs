@@ -34,7 +34,7 @@
 
         public override void AppendCSS(Env env, Context context)
         {
-            env.Output.AppendMany(Identifiers, env.Compress ? "," : ", ");
+            env.Output.AppendMany(Identifiers, env.Compress ? ",".AsMemory() : ", ".AsMemory());
 
             // Append pre comments as we out put each rule ourselves
             if (Rules.PreComments)

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using dotless.Core.Parser.Infrastructure;
 using dotless.Core.Parser.Infrastructure.Nodes;
 
@@ -30,7 +31,7 @@ namespace dotless.Core.Parser.Tree
     {
         public override void AppendCSS(Env env)
         {
-            env.Output.AppendMany(Inner, " ");
+            env.Output.AppendMany(Inner, " ".AsMemory());
         }
 
         protected override Node CloneCore() {

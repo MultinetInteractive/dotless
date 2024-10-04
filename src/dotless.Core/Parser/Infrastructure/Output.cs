@@ -5,31 +5,32 @@
     using System.Collections.Generic;
     using System.Text;
     using Nodes;
+    using dotless.Core.Utils;
 
     public class Output
     {
         private Env Env { get; set; }
-        private StringBuilder Builder { get; set; }
-        private Stack<StringBuilder> BuilderStack { get; set; }
+        private MemList Builder { get; set; }
+        private Stack<MemList> BuilderStack { get; set; }
 
         public Output(Env env)
         {
             Env = env;
-            BuilderStack = new Stack<StringBuilder>();
+            BuilderStack = new Stack<MemList>();
 
             Push();
         }
 
         public Output Push()
         {
-            Builder = new StringBuilder();
+            Builder = new MemList();
 
             BuilderStack.Push(Builder);
 
             return this;
         }
 
-        public StringBuilder Pop()
+        public MemList Pop()
         {
             if (BuilderStack.Count == 1)
                 throw new InvalidOperationException();
@@ -43,7 +44,7 @@
 
         public void Reset(string s)
         {
-            Builder = new StringBuilder(s);
+            Builder = new MemList() { s.AsMemory() };
 
             BuilderStack.Pop();
             BuilderStack.Push(Builder);
@@ -72,21 +73,23 @@
 
         public Output Append(string s)
         {
-            Builder.Append(s);
+            Builder.Add(s.AsMemory());
 
             return this;
         }
 
         public Output Append(char? s)
         {
-            Builder.Append(s);
-
+            if (s.HasValue)
+            {
+                Builder.Add(new ReadOnlyMemory<char>(new[] { s.Value }));
+            }
             return this;
         }
 
-        public Output Append(StringBuilder sb)
+        public Output Append(MemList sb)
         {
-            Builder.Append(sb);
+            Builder.AddRange(sb);
 
             return this;
         }
@@ -97,36 +100,36 @@
             return AppendMany(nodes, null);
         }
 
-        public Output AppendMany<TNode>(IEnumerable<TNode> nodes, string join)
+        public Output AppendMany<TNode>(IEnumerable<TNode> nodes, ReadOnlyMemory<char> join)
             where TNode : Node
         {
             return AppendMany(nodes, n => Env.Output.Append(n), join);
         }
 
-        public Output AppendMany(IEnumerable<string> list, string join)
+        public Output AppendMany(IEnumerable<string> list, ReadOnlyMemory<char> join)
         {
-            return AppendMany(list, (item, sb) => sb.Append(item), join);
+            return AppendMany(list, (item, sb) => sb.Add(item.ToString().AsMemory()), join);
         }
 
-        public Output AppendMany<T>(IEnumerable<T> list, Func<T, string> toString, string join)
+        public Output AppendMany<T>(IEnumerable<T> list, Func<T, string> toString, ReadOnlyMemory<char> join)
         {
-            return AppendMany(list, (item, sb) => sb.Append(toString(item)), join);
+            return AppendMany(list, (item, sb) => sb.Add(toString(item).AsMemory()), join);
         }
 
-        public Output AppendMany<T>(IEnumerable<T> list, Action<T> toString, string join)
+        public Output AppendMany<T>(IEnumerable<T> list, Action<T> toString, ReadOnlyMemory<char> join)
         {
             return AppendMany(list, (item, sb) => toString(item), join);
         }
 
-        public Output AppendMany<T>(IEnumerable<T> list, Action<T, StringBuilder> toString, string join)
+        public Output AppendMany<T>(IEnumerable<T> list, Action<T, MemList> toString, ReadOnlyMemory<char> join)
         {
             var first = true;
-            var hasJoinString = !string.IsNullOrEmpty(join);
+            var hasJoinString = !join.IsEmpty;
 
             foreach (var item in list)
             {
                 if (!first && hasJoinString)
-                    Builder.Append(join);
+                    Builder.Add(join);
 
                 first = false;
                 toString(item, Builder);
@@ -135,14 +138,14 @@
             return this;
         }
 
-        public Output AppendMany(IEnumerable<StringBuilder> buildersToAppend)
+        public Output AppendMany(IEnumerable<MemList> buildersToAppend)
         {
             return AppendMany(buildersToAppend, null);
         }
 
-        public Output AppendMany(IEnumerable<StringBuilder> buildersToAppend, string join)
+        public Output AppendMany(IEnumerable<MemList> buildersToAppend, ReadOnlyMemory<char> join)
         {
-            return AppendMany(buildersToAppend, (b, output) => output.Append(b), join);
+            return AppendMany(buildersToAppend, (b, output) => output.AddRange(b), join);
         }
 
         public Output AppendFormat(string format, params object[] values) {
@@ -151,7 +154,7 @@
 
         public Output AppendFormat(IFormatProvider formatProvider, string format, params object[] values)
         {
-            Builder.AppendFormat(formatProvider, format, values);
+            Builder.Add(string.Format(formatProvider, format, values).AsMemory());
 
             return this;
         }
@@ -161,8 +164,15 @@
             if (amount > 0)
             {
                 var indentation = new string(' ', amount);
-                Builder.Replace("\n", "\n" + indentation);
-                Builder.Insert(0, indentation);
+                for (int i = 0; i < Builder.Count; i++)
+                {
+                    if (Builder[i].Span.Contains("\n".AsSpan(), StringComparison.Ordinal))
+                    {
+                        Builder[i] = Builder[i].ToString().Replace("\n", "\n" + indentation).AsMemory();
+                    }
+                }
+
+                Builder.Insert(0, indentation.AsMemory());
             }
 
             return this;
@@ -181,26 +191,20 @@
         /// </summary>
         public Output TrimLeft(char? c)
         {
-            int trimLLength = 0;
-            int length = Builder.Length;
+            if (!c.HasValue)
+            {
+                return this;
+            }
+
+            int length = Builder.Count;
 
             if (length == 0)
             {
                 return this;
             }
 
-            while (trimLLength < length && 
-                    (c.HasValue ? Builder[trimLLength] == c.Value : 
-                                char.IsWhiteSpace(Builder[trimLLength])))
-            {
-                trimLLength++;
-            }
-
-            if (trimLLength > 0)
-            {
-                Builder.Remove(0, trimLLength);
-            }
-
+            Builder[0] = Builder[0].ToString().TrimStart(c.Value).AsMemory();
+            
             return this;
         }
 
@@ -209,25 +213,21 @@
         /// </summary>
         public Output TrimRight(char? c)
         {
-            int trimRLength = 0;
-            int length = Builder.Length;
+            if (!c.HasValue)
+            {
+                return this;
+            }
+
+            int length = Builder.Count;
 
             if (length == 0)
             {
                 return this;
             }
 
-            while (trimRLength < length && 
-                   (c.HasValue ? Builder[length - (trimRLength + 1)] == c.Value :
-                        char.IsWhiteSpace(Builder[length - (trimRLength + 1)])))
-            {
-                trimRLength++;
-            }
+            var lastIndex = Builder.Count-1;
 
-            if (trimRLength > 0)
-            {
-                Builder.Remove(length - trimRLength, trimRLength);
-            }
+            Builder[lastIndex] = Builder[lastIndex].ToString().TrimStart(c.Value).AsMemory();
 
             return this;
         }

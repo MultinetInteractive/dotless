@@ -6,6 +6,7 @@
     using Tree;
     using Utils;
     using dotless.Core.Parser.Infrastructure.Nodes;
+    using System;
 
     public class Context : IEnumerable<IEnumerable<Selector>>
     {
@@ -237,7 +238,7 @@
                 .Select(path => path.Select(p => p.ToCSS(env)).JoinStrings("").Trim())
                 .Distinct();
 
-            env.Output.AppendMany(selectors, env.Compress ? "," : ",\n");
+            env.Output.AppendMany(selectors, env.Compress ? ",".AsMemory() : ",\n".AsMemory());
         }
 
         public string ToCss(Env env)

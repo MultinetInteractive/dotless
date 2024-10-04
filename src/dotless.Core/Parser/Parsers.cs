@@ -170,11 +170,11 @@ namespace dotless.Core.Parser
         public Comment Comment(Parser parser)
         {
             var index = parser.Tokenizer.Location.Index;
-            string comment = parser.Tokenizer.GetComment();
+            ReadOnlyMemory<char> comment = parser.Tokenizer.GetComment();
 
-            if (comment != null)
+            if (!comment.Span.IsEmpty)
             {
-                return NodeProvider.Comment(comment, parser.Tokenizer.GetNodeLocation(index));
+                return NodeProvider.Comment(comment.ToString(), parser.Tokenizer.GetNodeLocation(index));
             }
 
             return null;
@@ -206,7 +206,7 @@ namespace dotless.Core.Parser
             if (escaped)
                 parser.Tokenizer.Match('~');
 
-            string str = parser.Tokenizer.GetQuotedString();
+            string str = parser.Tokenizer.GetQuotedString().ToString();
 
             if (str == null)
                 return null;

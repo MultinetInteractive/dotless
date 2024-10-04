@@ -3,6 +3,7 @@
 namespace dotless.Core.Parser.Infrastructure.Nodes
 {
     using System;
+    using System.Text;
 
     public abstract class Node
     {
@@ -116,11 +117,12 @@ namespace dotless.Core.Parser.Infrastructure.Nodes
 
         public virtual string ToCSS(Env env)
         {
-            return env.Output
+            var res = env.Output
                 .Push()
                 .Append(this)
-                .Pop()
-                .ToString();
+                .Pop();
+
+            return res.ToString();
         }
 
         public virtual Node Evaluate(Env env)

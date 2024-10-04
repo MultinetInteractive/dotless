@@ -1,8 +1,10 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace dotless.Core.Parser
 {
+    using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Text;
     using System.Text.RegularExpressions;
@@ -15,7 +17,7 @@ namespace dotless.Core.Parser
     {
         public int Optimization { get; set; }
 
-        private string _input; // LeSS input string
+        private ReadOnlyMemory<char> _input; // LeSS input string
         private List<Chunk> _chunks; // chunkified input
         private int _i; // current index in `input`
         private int _j; // current chunk
@@ -35,12 +37,17 @@ namespace dotless.Core.Parser
             Optimization = optimization;
         }
 
-        public void SetupInput(string input, string fileName)
+        public void SetupInput(ReadOnlyMemory<char> input, string fileName)
         {
             _fileName = fileName;
             _i = _j = _current = 0;
             _chunks = new List<Chunk>();
-            _input = input.Replace("\r\n", "\n");
+            _input = input;
+
+            if (_input.Span.Contains("\r\n".AsSpan(), StringComparison.Ordinal))
+            {
+                _input = input.ToString().Replace("\r\n", "\n").AsMemory();
+            }
             _inputLength = _input.Length;
 
             // Split the input into chunks,
@@ -63,26 +70,30 @@ namespace dotless.Core.Parser
                 int i = 0;
                 while(i < _inputLength)
                 {
-                    var match = skip.Match(_input, i);
-                    if(match.Success)
+                    Match match;
+                    if (_input.Span[i] == '@')
                     {
-                        Chunk.Append(match.Value, _chunks);
-                        i += match.Length;
-                        continue;
+                        match = skip.Match(_input.ToString(), i);
+                        if (match.Success)
+                        {
+                            Chunk.Append(match.Value.AsMemory(), _chunks);
+                            i += match.Length;
+                            continue;
+                        }
                     }
                     
-                    var c = _input[i];
+                    var c = _input.Span[i];
                     
                     if(i < _inputLength - 1 && c == '/')
                     {
-                        var cc = _input[i + 1];
+                        var cc = _input.Span[i + 1];
                         if ((!inParam && cc == '/') || cc == '*')
                         {
-                            match = comment.Match(_input, i);
+                            match = comment.Match(_input.ToString(), i);
                             if(match.Success)
                             {
                                 i += match.Length;
-                                _chunks.Add(new Chunk(match.Value, ChunkType.Comment));
+                                _chunks.Add(new Chunk(match.Value.AsMemory(), ChunkType.Comment));
                                 continue;
                             } else
                             {
@@ -93,11 +104,11 @@ namespace dotless.Core.Parser
                     
                     if(c == '"' || c == '\'')
                     {
-                        match = quotedstring.Match(_input, i);
+                        match = quotedstring.Match(_input.ToString(), i);
                         if(match.Success)
                         {
                             i += match.Length;
-                            _chunks.Add(new Chunk(match.Value, ChunkType.QuotedString));
+                            _chunks.Add(new Chunk(match.Value.AsMemory(), ChunkType.QuotedString));
                             continue;
                         } else
                         {
@@ -145,14 +156,14 @@ namespace dotless.Core.Parser
             Advance(0); // skip any whitespace characters at the start.
         }
 
-        public string GetComment()
+        public ReadOnlyMemory<char> GetComment()
         {
             // if we've hit the end we might still be looking at a valid chunk, so return early
             if (_i == _inputLength) {
                 return null;
             }
 
-            string val;
+            ReadOnlyMemory<char> val;
             int startI = _i;
             int endI = 0;
 
@@ -166,7 +177,7 @@ namespace dotless.Core.Parser
                 {
                     return null;
                 }
-                val = comment.Value;
+                val = comment.Value.AsMemory();
                 endI = startI + comment.Value.Length;
             }
             else
@@ -193,7 +204,7 @@ namespace dotless.Core.Parser
             return val;
         }
 
-        public string GetQuotedString()
+        public ReadOnlyMemory<char> GetQuotedString()
         {
             // if we've hit the end we might still be looking at a valid chunk, so return early
             if (_i == _inputLength) {
@@ -205,10 +216,10 @@ namespace dotless.Core.Parser
                     return null;
                 
                 var quotedstring = this.Match(this._quotedRegEx);
-                return quotedstring.Value;
+                return quotedstring.Value.AsMemory();
             } else {
                 if (_chunks[_j].Type == ChunkType.QuotedString) {
-                    string val = _chunks[_j].Value;
+                    ReadOnlyMemory<char> val = _chunks[_j].Value;
                     Advance(_chunks[_j].Value.Length);
                     return val;
                 }
@@ -240,7 +251,7 @@ namespace dotless.Core.Parser
                 return null;
             }
 
-            if (_input[_i] == tok)
+            if (_input.Span[_i] == tok)
             {
                 var index = _i;
 
@@ -270,7 +281,7 @@ namespace dotless.Core.Parser
 
             var regex = GetRegex(tok, options);
 
-            var match = regex.Match(_chunks[_j].Value, _i - _current);
+            var match = regex.Match(_chunks[_j].Value.ToString(), _i - _current);
 
             if (!match.Success)
                 return null;
@@ -291,7 +302,7 @@ namespace dotless.Core.Parser
 
             var regex = GetRegex(tok, RegexOptions.None);
             
-            var match = regex.Match(_input, _i);
+            var match = regex.Match(_input.ToString(), _i);
             
             if (!match.Success)
                 return null;
@@ -301,7 +312,7 @@ namespace dotless.Core.Parser
             if (_i > _current && _i < _current + _chunks[_j].Value.Length)
             {
                 //If we absorbed the start of an inline comment then turn it into text so the rest can be absorbed
-                if (_chunks[_j].Type == ChunkType.Comment && _chunks[_j].Value.StartsWith("//"))
+                if (_chunks[_j].Type == ChunkType.Comment && _chunks[_j].Value.Span.StartsWith("//".AsSpan(), StringComparison.Ordinal))
                 {
                     _chunks[_j].Type = ChunkType.Text;
                 }
@@ -339,7 +350,7 @@ namespace dotless.Core.Parser
                         break;
                 }
 
-                if (!char.IsWhiteSpace(_input[_i]))
+                if (!char.IsWhiteSpace(_input.Span[_i]))
                     break;
 
                 _i++;
@@ -354,14 +365,14 @@ namespace dotless.Core.Parser
             if (_i == _inputLength)
                 return false;
 
-            return _input[_i] == tok;
+            return _input.Span[_i] == tok;
         }
 
         public bool Peek(string tok)
         {
             var regex = GetRegex(tok, RegexOptions.None);
 
-            var match = regex.Match(_input, _i);
+            var match = regex.Match(_input.ToString(), _i);
 
             return match.Success;
         }
@@ -370,7 +381,7 @@ namespace dotless.Core.Parser
         {
             var memo = this.Location;
 
-            while(GetComment() != null);
+            while(!GetComment().Span.IsEmpty);
 
             var peekSuccess = Peek(tok);
 
@@ -403,22 +414,22 @@ namespace dotless.Core.Parser
                 return '\0';
             }
 
-            return _input[i];
+            return _input.Span[i];
         }
 
         public char PreviousChar
         {
-            get { return _i == 0 ? '\0' : _input[_i - 1]; }
+            get { return _i == 0 ? '\0' : _input.Span[_i - 1]; }
         }
 
         public char CurrentChar
         {
-            get { return _i == _inputLength ? '\0' : _input[_i]; }
+            get { return _i == _inputLength ? '\0' : _input.Span[_i]; }
         }
 
         public char NextChar
         {
-            get { return _i + 1 == _inputLength ? '\0' : _input[_i + 1]; }
+            get { return _i + 1 == _inputLength ? '\0' : _input.Span[_i + 1]; }
         }
 
         public bool HasCompletedParsing()
@@ -466,13 +477,13 @@ namespace dotless.Core.Parser
         {
             private StringBuilder _builder;
 
-            public Chunk(string val)
+            public Chunk(ReadOnlyMemory<char> val)
             {
                 Value = val;
                 Type = ChunkType.Text;
             }
 
-            public Chunk(string val, ChunkType type)
+            public Chunk(ReadOnlyMemory<char> val, ChunkType type)
             {
                 Value = val;
                 Type = type;
@@ -486,11 +497,11 @@ namespace dotless.Core.Parser
 
             public ChunkType Type { get; set; }
 
-            public string Value { get; set; }
+            public ReadOnlyMemory<char> Value { get; set; }
 
             private bool _final;
 
-            public void Append(string str)
+            public void Append(ReadOnlyMemory<char> str)
             {
                 _builder.Append(str);
             }
@@ -524,33 +535,33 @@ namespace dotless.Core.Parser
                 chunk.Append(c);
             }
 
-            public static void Append(string s, List<Chunk> chunks)
+            public static void Append(ReadOnlyMemory<char> s, List<Chunk> chunks)
             {
                 Chunk chunk = ReadyForText(chunks);
                 chunk.Append(s);
             }
 
-            public static string CommitAll(List<Chunk> chunks)
+            public static ReadOnlyMemory<char> CommitAll(List<Chunk> chunks)
             {
                 StringBuilder all = new StringBuilder();
                 foreach(Chunk chunk in chunks)
                 {
                     if  (chunk._builder != null)
                     {
-                        string val = chunk._builder.ToString();
+                        ReadOnlyMemory<char> val = chunk._builder.ToString().AsMemory();
                         chunk._builder = null;
                         chunk.Value = val;
                     }
 
                     all.Append(chunk.Value);
                 }
-                return all.ToString();
+                return all.ToString().AsMemory();
             }
         }
 
-        private string Remaining
+        private ReadOnlyMemory<char> Remaining
         {
-            get { return _input.Substring(_i); }
+            get { return _input.Slice(_i); }
         }
     }
 

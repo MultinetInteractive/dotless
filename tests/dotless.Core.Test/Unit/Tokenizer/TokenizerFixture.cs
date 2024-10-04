@@ -1,6 +1,7 @@
 ﻿
 namespace dotless.Core.Test.Unit.Tokenizer
 {
+    using System;
     using Core.Parser;
     using NUnit.Framework;
 
@@ -11,7 +12,7 @@ namespace dotless.Core.Test.Unit.Tokenizer
         {
             var tok = new Tokenizer(0);
 
-            var expression = "abc - def";
+            var expression = "abc - def".AsMemory();
 
             tok.SetupInput(expression, "testfile.less");
 

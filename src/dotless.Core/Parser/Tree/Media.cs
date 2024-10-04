@@ -238,7 +238,7 @@ namespace dotless.Core.Parser.Tree
             }
 
             // if we have no contents, skip
-            if (env.Compress && contents.Length == 0)
+            if (env.Compress && contents.ToString().Length == 0)
                 return;
 
             // go ahead and output
