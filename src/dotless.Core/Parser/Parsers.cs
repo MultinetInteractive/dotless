@@ -793,7 +793,7 @@ namespace dotless.Core.Parser
                     break;
                 }
 
-                if (param = parser.Tokenizer.Match(@"@[a-zA-Z0-9_-]+"))
+                if (param = parser.Tokenizer.MatchIdentifier())
                 {
                     GatherAndPullComments(parser);
 
@@ -804,7 +804,7 @@ namespace dotless.Core.Parser
 
                         parameters.Add(NodeProvider.Rule(param.Value, value, parser.Tokenizer.GetNodeLocation(i)));
                     }
-                    else if (parser.Tokenizer.Match("\\.{3}"))
+                    else if (parser.Tokenizer.MatchExact("..."))
                     {
                         variadic = true;
                         parameters.Add(NodeProvider.Rule(param.Value, null, true, parser.Tokenizer.GetNodeLocation(i)));
@@ -1712,7 +1712,7 @@ namespace dotless.Core.Parser
 
         public Media Media(Parser parser)
         {
-            if (!parser.Tokenizer.Match("@media"))
+            if (!parser.Tokenizer.MatchExact("@media"))
                 return null;
 
             var index = parser.Tokenizer.Location.Index;

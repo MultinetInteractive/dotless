@@ -272,7 +272,7 @@ namespace dotless.Core.Parser
 
             var startingPosition = _i - _current;
 
-            if (startingPosition + tok.Length >= _chunks[_j].Value.Length)
+            if (startingPosition + tok.Length > _chunks[_j].Value.Length)
                 return null;
 
             var index = _i;
