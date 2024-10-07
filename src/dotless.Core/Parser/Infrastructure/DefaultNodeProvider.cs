@@ -23,12 +23,12 @@
             return new Selector(elements) { Location = location };
         }
 
-        public Rule Rule(string name, Node value, NodeLocation location)
+        public Rule Rule(ReadOnlyMemory<char> name, Node value, NodeLocation location)
         {
             return new Rule(name, value) { Location = location };
         }
 
-        public Rule Rule(string name, Node value, bool variadic, NodeLocation location)
+        public Rule Rule(ReadOnlyMemory<char> name, Node value, bool variadic, NodeLocation location)
         {
             return new Rule(name, value, variadic) { Location = location };
         }

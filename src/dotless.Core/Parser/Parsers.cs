@@ -774,16 +774,16 @@ namespace dotless.Core.Parser
                         GatherComments(parser);
                         var value = Expect(Expression(parser), "Expected value", parser);
 
-                        parameters.Add(NodeProvider.Rule(param.Value.ToString(), value, parser.Tokenizer.GetNodeLocation(i)));
+                        parameters.Add(NodeProvider.Rule(param.Value, value, parser.Tokenizer.GetNodeLocation(i)));
                     }
                     else if (parser.Tokenizer.Match("\\.{3}"))
                     {
                         variadic = true;
-                        parameters.Add(NodeProvider.Rule(param.Value.ToString(), null, true, parser.Tokenizer.GetNodeLocation(i)));
+                        parameters.Add(NodeProvider.Rule(param.Value, null, true, parser.Tokenizer.GetNodeLocation(i)));
                         break;
                     }
                     else
-                        parameters.Add(NodeProvider.Rule(param.Value.ToString(), null, parser.Tokenizer.GetNodeLocation(i)));
+                        parameters.Add(NodeProvider.Rule(param.Value, null, parser.Tokenizer.GetNodeLocation(i)));
 
                 } else if (param2 = Literal(parser) || Keyword(parser))
                 {
@@ -1211,7 +1211,7 @@ namespace dotless.Core.Parser
             PushComments();
 
             Variable variable = null;
-            var name = Property(parser).AsMemory();
+            var name = Property(parser);
             bool interpolatedName = false;
 
             if (name.Span.IsEmpty) {
@@ -1266,7 +1266,7 @@ namespace dotless.Core.Parser
                     value.PreComments = preValueComments;
                     value.PostComments = postValueComments;
 
-                    var rule = NodeProvider.Rule(name.ToString(), value,
+                    var rule = NodeProvider.Rule(name, value,
                         parser.Tokenizer.GetNodeLocation(memo.TokenizerLocation.Index));
                     if (interpolatedName) {
                         rule.InterpolatedName = true;
@@ -1604,7 +1604,7 @@ namespace dotless.Core.Parser
 
                     // in order to support (color) and have rule/*comment*/: we need to keep :
                     // out of property
-                    if (!string.IsNullOrEmpty(property) && !parser.Tokenizer.Match(':'))
+                    if (!property.IsEmpty && !parser.Tokenizer.Match(':'))
                     {
                         Recall(parser, memo);
                         property = null;
@@ -1637,7 +1637,7 @@ namespace dotless.Core.Parser
                     entity.PreComments = PullComments();
                     entity.PostComments = GatherAndPullComments(parser);
 
-                    if (!string.IsNullOrEmpty(property))
+                    if (!property.IsEmpty)
                     {
                         var rule = NodeProvider.Rule(property, entity, parser.Tokenizer.GetNodeLocation(index));
                         rule.IsSemiColonRequired = false;
@@ -2032,14 +2032,14 @@ namespace dotless.Core.Parser
         }
 #endif
 
-        public string Property(Parser parser)
+        public ReadOnlyMemory<char> Property(Parser parser)
         {
             var name = parser.Tokenizer.Match(@"\*?-?[-_a-zA-Z][-_a-z0-9A-Z]*(?:\+_?)?");
 
             if (name)
-                return name.Value.ToString();
+                return name.Value;
 
-            return null;
+            return ReadOnlyMemory<char>.Empty;
         }
 
         public void Expect(Parser parser, char expectedString)

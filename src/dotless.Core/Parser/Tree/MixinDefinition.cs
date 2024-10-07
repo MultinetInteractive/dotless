@@ -104,7 +104,7 @@
 
             var frame = new Ruleset(new NodeList<Selector>(), new NodeList());
 
-            frame.Rules.Insert(0, new Rule("@arguments", new Expression(argumentNodes.Where(a => a != null)).Evaluate(env)));
+            frame.Rules.Insert(0, new Rule("@arguments".AsMemory(), new Expression(argumentNodes.Where(a => a != null)).Evaluate(env)));
 
             foreach (var arg in arguments)
             {

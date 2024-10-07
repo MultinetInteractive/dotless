@@ -25,22 +25,8 @@ namespace dotless.Core.Parser.Tree
         }
         public bool InterpolatedName { get; set; }
 
-        public Rule(string name, Node value) : this(name, value, false)
-        { 
-        }
-
         public Rule(ReadOnlyMemory<char> name, Node value) : this(name, value, false)
         {
-        }
-
-        public Rule(string name, Node value, bool variadic)
-        {
-            Name = name.AsMemory();
-            Value = value;
-            Variable = !string.IsNullOrEmpty(name) && name[0] == '@';
-            IsSemiColonRequired = true;
-            Variadic = variadic;
-            Merge = "";
         }
 
         public Rule(ReadOnlyMemory<char> name, Node value, bool variadic)
@@ -62,7 +48,7 @@ namespace dotless.Core.Parser.Tree
                 throw new ParsingException("No value found for rule " + Name, Location);
             }
 
-            var rule = new Rule(EvaluateName(env).ToString(), Value.Evaluate(env)).ReducedFrom<Rule>(this);
+            var rule = new Rule(EvaluateName(env), Value.Evaluate(env)).ReducedFrom<Rule>(this);
             rule.Merge = Merge;
             rule.IsSemiColonRequired = this.IsSemiColonRequired;
             rule.PostNameComments = this.PostNameComments;

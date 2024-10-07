@@ -11,8 +11,8 @@
         Element Element(Combinator combinator, Node Value, NodeLocation location);
         Combinator Combinator(string value, NodeLocation location);
         Selector Selector(NodeList<Element> elements, NodeLocation location);
-        Rule Rule(string name, Node value, NodeLocation location);
-        Rule Rule(string name, Node value, bool variadic, NodeLocation location);
+        Rule Rule(ReadOnlyMemory<char> name, Node value, NodeLocation location);
+        Rule Rule(ReadOnlyMemory<char> name, Node value, bool variadic, NodeLocation location);
         Ruleset Ruleset(NodeList<Selector> selectors, NodeList rules, NodeLocation location);
 
         CssFunction CssFunction(string name, Node value, NodeLocation location);
