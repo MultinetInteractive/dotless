@@ -1,5 +1,6 @@
 ﻿namespace dotless.Core.Parser.Tree
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using Infrastructure;
@@ -7,11 +8,18 @@
 
     public class Directive : Ruleset
     {
-        public string Name { get; set; }
+        public ReadOnlyMemory<char> Name { get; set; }
         public string Identifier { get; set; }
         public Node Value { get; set; }
 
         public Directive(string name, string identifier, NodeList rules)
+        {
+            Name = name.AsMemory();
+            Rules = rules;
+            Identifier = identifier;
+        }
+
+        public Directive(ReadOnlyMemory<char> name, string identifier, NodeList rules)
         {
             Name = name;
             Rules = rules;
@@ -19,6 +27,12 @@
         }
 
         public Directive(string name, Node value)
+        {
+            Name = name.AsMemory();
+            Value = value;
+        }
+
+        public Directive(ReadOnlyMemory<char> name, Node value)
         {
             Name = name;
             Value = value;

@@ -1469,22 +1469,27 @@ namespace dotless.Core.Parser
 
             var index = parser.Tokenizer.Location.Index;
 
-            var name = parser.Tokenizer.MatchString(@"@[-a-z]+");
-            if (string.IsNullOrEmpty(name))
+            var directiveName = parser.Tokenizer.MatchDirectiveName();
+            ReadOnlyMemory<char> name;
+            if (directiveName == null)
             {
                 return null;
             }
+
+            name = directiveName.Value;
             bool hasIdentifier = false, hasBlock = false, isKeyFrame = false;
             NodeList rules, preRulesComments = null, preComments = null;
             string identifierRegEx = @"[^{]+";
-            string nonVendorSpecificName = name;
+            var nonVendorSpecificName = name;
+            var dashIndex = 0;
 
-            if (name.StartsWith("@-") && name.IndexOf('-', 2) > 0)
+            if (name.Span.StartsWith("@-".AsSpan()) && (dashIndex = name.Span.Slice(2).IndexOf('-')) > 0)
             {
-                nonVendorSpecificName = "@" + name.Substring(name.IndexOf('-', 2) + 1);
+                //+3 is built up of 2 from the slice above and then we want everything after the -
+                nonVendorSpecificName = ("@" + name.Slice(dashIndex + 3).ToString()).AsMemory();
             }
 
-            switch (nonVendorSpecificName)
+            switch (nonVendorSpecificName.ToString())
             {
                 case "@font-face":
                     hasBlock = true;
@@ -1693,7 +1698,7 @@ namespace dotless.Core.Parser
             return NodeProvider.Media(rules, features, parser.Tokenizer.GetNodeLocation(index));
         }
 
-        public Directive KeyFrameBlock(Parser parser, string name, string identifier, int index)
+        public Directive KeyFrameBlock(Parser parser, ReadOnlyMemory<char> name, string identifier, int index)
         {
             if (!parser.Tokenizer.Match('{'))
                 return null;

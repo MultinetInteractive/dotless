@@ -406,6 +406,45 @@ namespace dotless.Core.Parser
             }
         }
 
+        public RegexMatchResult MatchDirectiveName()
+        {
+            if (_i == _inputLength || _chunks[_j].Type != ChunkType.Text)
+            {
+                return null;
+            }
+
+            var startingPosition = _i - _current;
+
+            var x = 0;
+
+            char Current()
+            {
+                return _chunks[_j].Value.Span[startingPosition + x];
+            }
+
+            if (Current() != '@')
+                return null;
+
+            x++;
+
+            while (_chunks[_j].Value.Length > (startingPosition + x) && (char.IsLower(Current()) || Current() == '-'))
+            {
+                x++;
+            }
+
+            if (x > 0)
+            {
+                var res = new RegexMatchResult(_chunks[_j].Value.Slice(startingPosition, x), GetNodeLocation(startingPosition));
+                Advance(x);
+
+                return res;
+            }
+            else //nothing
+            {
+                return null;
+            }
+        }
+
         public RegexMatchResult Match(string tok, bool caseInsensitive)
         {
             if (_i == _inputLength || _chunks[_j].Type != ChunkType.Text) {
