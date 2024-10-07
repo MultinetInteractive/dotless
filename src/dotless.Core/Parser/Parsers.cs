@@ -352,7 +352,7 @@ namespace dotless.Core.Parser
         {
             var index = parser.Tokenizer.Location.Index;
 
-            if (parser.Tokenizer.CurrentChar != 'u' || !parser.Tokenizer.Match(@"url\("))
+            if (parser.Tokenizer.CurrentChar != 'u' || !parser.Tokenizer.MatchExact("url("))
                 return null;
 
             GatherComments(parser);
