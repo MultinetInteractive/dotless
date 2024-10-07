@@ -29,7 +29,7 @@ namespace dotless.Core.Parser.Tree
             set;
         }
 
-        private Dictionary<string, List<Closure>> _lookups;
+        private Dictionary<ReadOnlyMemory<char>, List<Closure>> _lookups;
 
         public Ruleset(NodeList<Selector> selectors, NodeList rules)
             : this(selectors, rules, null)
@@ -46,24 +46,11 @@ namespace dotless.Core.Parser.Tree
 
         protected Ruleset()
         {
-            _lookups = new Dictionary<string, List<Closure>>();
+            _lookups = new Dictionary<ReadOnlyMemory<char>, List<Closure>>(MemComparer.Default);
             OriginalRuleset = this;
         }
 
-        /// <summary>
-        ///  returns whether this rulset is equal to or cloned from another node
-        /// </summary>
-        public bool IsEqualOrClonedFrom(Node node)
-        {
-            Ruleset ruleset = node as Ruleset;
-            if (ruleset)
-            {
-                return IsEqualOrClonedFrom(ruleset);
-            }
-            return false;
-        }
-
-        /// <summary>
+          /// <summary>
         ///  returns whether this rulset is equal to or cloned from another ruleset
         /// </summary>
         public bool IsEqualOrClonedFrom(Ruleset ruleset)
@@ -71,21 +58,27 @@ namespace dotless.Core.Parser.Tree
             return ruleset.OriginalRuleset == OriginalRuleset;
         }
 
-        public Rule Variable(string name, Node startNode)
+        public Rule Variable(ReadOnlyMemory<char> name, Node startNode)
         {
             Ruleset startNodeRuleset = startNode as Ruleset;
 
-            return Rules
-                .TakeWhile(r => r != startNode && (startNodeRuleset == null || !startNodeRuleset.IsEqualOrClonedFrom(r)))
-                .OfType<Rule>()
-                .Where(r => r.Variable)
-                .Reverse()
-                .FirstOrDefault(r => r.Name == name);
+            for(int i = Rules.Count-1; i >= 0; i--)
+            {
+                var r = Rules[i];
+
+                if (r == startNode || (startNodeRuleset != null && (r is Ruleset rs && startNodeRuleset.IsEqualOrClonedFrom(rs))))
+                    break;
+
+                if (r is Rule rule && rule.Variable && rule.Name.Span.SequenceEqual(name.Span))
+                    return rule;
+            }
+
+            return default;
         }
 
-        public List<Ruleset> Rulesets()
+        public IEnumerable<Ruleset> Rulesets()
         {
-            return (Rules ?? Enumerable.Empty<Node>()).OfType<Ruleset>().ToList();
+            return (Rules ?? Enumerable.Empty<Node>()).OfType<Ruleset>();
         }
 
         public List<Closure> Find<TRuleset>(Env env, Selector selector, Ruleset self) where TRuleset : Ruleset
@@ -111,7 +104,7 @@ namespace dotless.Core.Parser.Tree
                 return Enumerable.Empty<Closure>();
             }
 
-            string selectorCss = selector.ToCSS(env);
+            ReadOnlyMemory<char> selectorCss = selector.ToCSS(env);
             var key = selectorCss;
             if (_lookups.ContainsKey(key))
                 return _lookups[key];
@@ -544,7 +537,7 @@ namespace dotless.Core.Parser.Tree
         {
             var format = "{0}{{{1}}}";
             return Selectors != null && Selectors.Count > 0
-                       ? string.Format(format, Selectors.Select(s => s.ToCSS(new Env(null))).JoinStrings(""), Rules.Count)
+                       ? string.Format(format, Selectors.Select(s => s.ToCSS(new Env(null)).ToString()).JoinStrings(""), Rules.Count)
                        : string.Format(format, "*", Rules.Count);
         }
     }

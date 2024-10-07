@@ -37,7 +37,7 @@
             if (Arguments.Count == 0)
                 return new Quoted("", false);
 
-            Func<Node, string> stringValue = n => n is Quoted ? ((Quoted)n).Value.ToString() : n.ToCSS(env);
+            Func<Node, ReadOnlyMemory<char>> stringValue = n => n is Quoted ? ((Quoted)n).Value : n.ToCSS(env);
 
             var str = stringValue(Arguments[0]);
 
@@ -51,15 +51,15 @@
                                                                 args[i++].ToCSS(env);
 
                                                  return char.IsUpper(m.Value[1]) ?
-                                                     Uri.EscapeDataString(value) :
-                                                     value;
+                                                     Uri.EscapeDataString(value.ToString()) :
+                                                     value.ToString();
                                              };
 
-            str = Regex.Replace(str, "%[sda]", replacement, RegexOptions.IgnoreCase);
+            str = Regex.Replace(str.ToString(), "%[sda]", replacement, RegexOptions.IgnoreCase).AsMemory();
 
             var quote = Arguments[0] is Quoted ? (Arguments[0] as Quoted).Quote : null;
 
-            return new Quoted(str, quote);
+            return new Quoted(str.ToString(), quote);
         }
     }
 }

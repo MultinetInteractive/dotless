@@ -14,12 +14,12 @@
 
             var number = Arguments[0] as Number;
 
-            var unit = string.Empty;
+            var unit = System.ReadOnlyMemory<char>.Empty;
             if (Arguments.Count == 2)
             {
                 if (Arguments[1] is Keyword)
                 {
-                    unit = ((Keyword)Arguments[1]).Value.ToString();
+                    unit = ((Keyword)Arguments[1]).Value;
                 }
                 else
                 {
@@ -27,7 +27,7 @@
                 }
             }
 
-            return new Number(number.Value, unit);
+            return new Number(number.Value, unit.ToString());
         }
     }
 }

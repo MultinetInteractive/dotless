@@ -83,7 +83,7 @@ namespace dotless.Core.Parser.Tree
                 return evaluatedSelector;
             }
 
-            Parser.Tokenizer.SetupInput(evaluatedSelector.ToCSS(env).AsMemory(), "");
+            Parser.Tokenizer.SetupInput(evaluatedSelector.ToCSS(env), "");
 
             var result = new NodeList<Selector>();
             Selector selector;
@@ -122,7 +122,7 @@ namespace dotless.Core.Parser.Tree
 
         public override string ToString()
         {
-            return ToCSS(new Env(null));
+            return ToCSS(new Env(null)).ToString();
         }
     }
 }

@@ -3,6 +3,7 @@ using dotless.Core.Parser;
 using dotless.Core.Parser.Tree;
 using dotless.Core.Plugins;
 using dotless.Core.Stylizers;
+using dotless.Core.Utils;
 
 namespace dotless.Core
 {
@@ -122,7 +123,7 @@ namespace dotless.Core
                 }));
 
                 LastTransformationSuccessful = true;
-                return css;
+                return css.ToString();
             }
             catch (ParserException e)
             {

@@ -115,14 +115,14 @@ namespace dotless.Core.Parser.Infrastructure.Nodes
             Evaluate(env).AppendCSS(env);
         }
 
-        public virtual string ToCSS(Env env)
+        public virtual ReadOnlyMemory<char> ToCSS(Env env)
         {
             var res = env.Output
                 .Push()
                 .Append(this)
                 .Pop();
 
-            return res.ToString();
+            return res.ToMemory();
         }
 
         public virtual Node Evaluate(Env env)

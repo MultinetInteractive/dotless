@@ -234,7 +234,7 @@
             var env = DefaultEnv();
             env.Parser = parser;
             env.Logger = testLogger = new TestLogger(LogLevel.Info);
-            return tree.ToCSS(env);
+            return tree.ToCSS(env).ToString();
         }
     }
 }

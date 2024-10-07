@@ -138,7 +138,7 @@
             {
                 visitDeeper = false;
 
-                string ruleName = (rule.Name ?? "").ToLowerInvariant();
+                string ruleName = (rule.Name).ToString().ToLowerInvariant();
 
                 foreach (Prefix prefix in PrefixesToProcess)
                 {
@@ -151,25 +151,25 @@
 
                         if (prefix.RemovePrefix)
                         {
-                            rule.Name = rule.Name.Substring(prefix.PrefixString.Length);
+                            rule.Name = rule.Name.Slice(prefix.PrefixString.Length);
                         }
 
                         if (prefix.Reverse)
                         {
-                            if (rule.Name.IndexOf("right", StringComparison.InvariantCultureIgnoreCase) >= 0)
+                            if (rule.Name.Span.IndexOf("right".AsSpan(), StringComparison.InvariantCultureIgnoreCase) >= 0)
                             {
-                                rule.Name = Replace(rule.Name, "right", "left", StringComparison.InvariantCultureIgnoreCase);
+                                rule.Name = Replace(rule.Name.ToString(), "right", "left", StringComparison.InvariantCultureIgnoreCase).AsMemory();
                                 return rule;
                             }
 
-                            if (rule.Name.IndexOf("left", StringComparison.InvariantCultureIgnoreCase) >= 0)
+                            if (rule.Name.Span.IndexOf("left".AsSpan(), StringComparison.InvariantCultureIgnoreCase) >= 0)
                             {
-                                rule.Name = Replace(rule.Name, "left", "right", StringComparison.InvariantCultureIgnoreCase);
+                                rule.Name = Replace(rule.Name.ToString(), "left", "right", StringComparison.InvariantCultureIgnoreCase).AsMemory();
                                 return rule;
                             }
 
-                            if (rule.Name.IndexOf("top", StringComparison.InvariantCultureIgnoreCase) >= 0 ||
-                                rule.Name.IndexOf("bottom", StringComparison.InvariantCultureIgnoreCase) >= 0)
+                            if (rule.Name.Span.IndexOf("top".AsSpan(), StringComparison.InvariantCultureIgnoreCase) >= 0 ||
+                                rule.Name.Span.IndexOf("bottom".AsSpan(), StringComparison.InvariantCultureIgnoreCase) >= 0)
                             {
                                 return rule;
                             }

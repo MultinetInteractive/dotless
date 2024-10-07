@@ -92,16 +92,16 @@ namespace dotless.Core.Parser.Infrastructure
         /// <summary>
         ///  Creates a new Env variable for the purposes of scope
         /// </summary>
-        public virtual Env CreateVariableEvaluationEnv(string variableName) {
+        public virtual Env CreateVariableEvaluationEnv(ReadOnlyMemory<char> variableName) {
             var env = CreateChildEnv();
             env.EvaluatingVariable = variableName;
             return env;
         }
 
-        private string EvaluatingVariable { get; set; }
+        private ReadOnlyMemory<char> EvaluatingVariable { get; set; }
 
-        public bool IsEvaluatingVariable(string variableName) {
-            if (string.Equals(variableName, EvaluatingVariable, StringComparison.InvariantCulture)) {
+        public bool IsEvaluatingVariable(ReadOnlyMemory<char> variableName) {
+            if (variableName.Span.Equals(EvaluatingVariable.Span, StringComparison.InvariantCulture)) {
                 return true;
             }
 
@@ -188,7 +188,7 @@ namespace dotless.Core.Parser.Infrastructure
         /// <summary>
         ///  Finds the first scoped variable with this name
         /// </summary>
-        public Rule FindVariable(string name)
+        public Rule FindVariable(ReadOnlyMemory<char> name)
         {
             return FindVariable(name, Rule);
         }
@@ -196,7 +196,7 @@ namespace dotless.Core.Parser.Infrastructure
         /// <summary>
         ///  Finds the first scoped variable matching the name, using Rule as the current rule to work backwards from
         /// </summary>
-        public Rule FindVariable(string name, Node rule)
+        public Rule FindVariable(ReadOnlyMemory<char> name, Node rule)
         {
             var previousNode = rule;
             foreach (var frame in Frames)

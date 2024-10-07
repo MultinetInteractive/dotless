@@ -115,7 +115,12 @@
 
         public Output AppendMany(IEnumerable<string> list, ReadOnlyMemory<char> join)
         {
-            return AppendMany(list, (item, sb) => sb.Add(item.ToString().AsMemory()), join);
+            return AppendMany(list, (item, sb) => sb.Add(item.AsMemory()), join);
+        }
+
+        public Output AppendMany(IEnumerable<ReadOnlyMemory<char>> list, ReadOnlyMemory<char> join)
+        {
+            return AppendMany(list, (item, sb) => sb.Add(item), join);
         }
 
         public Output AppendMany<T>(IEnumerable<T> list, Func<T, string> toString, ReadOnlyMemory<char> join)

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace dotless.Core.Parser.Tree
 {
@@ -6,11 +6,12 @@ namespace dotless.Core.Parser.Tree
     using Infrastructure;
     using Infrastructure.Nodes;
     using Plugins;
+    using System;
     using System.Text.RegularExpressions;
 
     public class Rule : Node
     {
-        public string Name { get; set; }
+        public ReadOnlyMemory<char> Name { get; set; }
         public Node Value { get; set; }
         public bool Variable { get; set; }
         public NodeList PostNameComments { get; set; }
@@ -28,11 +29,25 @@ namespace dotless.Core.Parser.Tree
         { 
         }
 
+        public Rule(ReadOnlyMemory<char> name, Node value) : this(name, value, false)
+        {
+        }
+
         public Rule(string name, Node value, bool variadic)
+        {
+            Name = name.AsMemory();
+            Value = value;
+            Variable = !string.IsNullOrEmpty(name) && name[0] == '@';
+            IsSemiColonRequired = true;
+            Variadic = variadic;
+            Merge = "";
+        }
+
+        public Rule(ReadOnlyMemory<char> name, Node value, bool variadic)
         {
             Name = name;
             Value = value;
-            Variable = !string.IsNullOrEmpty(name) && name[0] == '@';
+            Variable = !name.Span.IsEmpty && name.Span[0] == '@';
             IsSemiColonRequired = true;
             Variadic = variadic;
             Merge = "";
@@ -47,7 +62,7 @@ namespace dotless.Core.Parser.Tree
                 throw new ParsingException("No value found for rule " + Name, Location);
             }
 
-            var rule = new Rule(EvaluateName(env), Value.Evaluate(env)).ReducedFrom<Rule>(this);
+            var rule = new Rule(EvaluateName(env).ToString(), Value.Evaluate(env)).ReducedFrom<Rule>(this);
             rule.Merge = Merge;
             rule.IsSemiColonRequired = this.IsSemiColonRequired;
             rule.PostNameComments = this.PostNameComments;
@@ -57,7 +72,7 @@ namespace dotless.Core.Parser.Tree
             return rule;
         }
 
-        private string EvaluateName(Env env) {
+        private ReadOnlyMemory<char> EvaluateName(Env env) {
             if (!InterpolatedName) {
                 return Name;
             }

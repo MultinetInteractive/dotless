@@ -29,17 +29,17 @@
             if (name.Span.StartsWith("@@".AsSpan()))
             {
                 var v = new Variable(name.Slice(1)).Evaluate(env);
-                name = ('@' + (v is TextNode ? (v as TextNode).Value.ToString() : v.ToCSS(env))).AsMemory();
+                name = ('@' + (v is TextNode ? (v as TextNode).Value.ToString() : v.ToCSS(env).ToString())).AsMemory();
             }
 
-            if (env.IsEvaluatingVariable(name.ToString())) {
+            if (env.IsEvaluatingVariable(name)) {
                 throw new ParsingException("Recursive variable definition for " + name, Location);
             }
 
-            var variable = env.FindVariable(name.ToString());
+            var variable = env.FindVariable(name);
 
             if (variable) {
-                return variable.Value.Evaluate(env.CreateVariableEvaluationEnv(name.ToString()));
+                return variable.Value.Evaluate(env.CreateVariableEvaluationEnv(name));
             }
 
             throw new ParsingException("variable " + name + " is undefined", Location);

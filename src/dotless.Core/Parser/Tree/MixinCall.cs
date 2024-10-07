@@ -1,4 +1,4 @@
-namespace dotless.Core.Parser.Tree
+﻿namespace dotless.Core.Parser.Tree
 {
     using System;
     using System.Collections.Generic;
@@ -131,7 +131,7 @@ namespace dotless.Core.Parser.Tree
             {
                 var message = String.Format("No matching definition was found for `{0}({1})`",
                                             Selector.ToCSS(env).Trim(),
-                                            Arguments.Select(a => a.Value.ToCSS(env)).JoinStrings(env.Compress ? "," : ", "));
+                                            Arguments.Select(a => a.Value.ToCSS(env).ToString()).JoinStrings(env.Compress ? "," : ", "));
                 throw new ParsingException(message, Location);
             }
 

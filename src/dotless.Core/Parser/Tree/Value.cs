@@ -52,7 +52,7 @@
 
         public override string ToString()
         {
-            return ToCSS(new Env(null)); // only used during debugging.
+            return ToCSS(new Env(null)).ToString(); // only used during debugging.
         }
 
         public override Node Evaluate(Env env)

@@ -31,6 +31,7 @@
 
 using System;
 using System.Text.RegularExpressions;
+using dotless.Core.Utils;
 
 #pragma warning disable 665
 // ReSharper disable RedundantNameQualifier
@@ -95,10 +96,10 @@ namespace dotless.Core.Parser
                 else
                 {
                     var rule = node as Rule;
-                    if (rule != null && (rule.Name.EndsWith("+") || rule.Name.EndsWith("+_")))
+                    if (rule != null && (rule.Name.Span.EndsWith("+".AsSpan()) || rule.Name.Span.EndsWith("+_".AsSpan())))
                     {
-                        rule.Merge = rule.Name.EndsWith("+") ? ", " : " ";
-                        rule.Name = rule.Name.TrimEnd('+', '_');
+                        rule.Merge = rule.Name.Span.EndsWith("+".AsSpan()) ? ", " : " ";
+                        rule.Name = rule.Name.TrimRight('+', '_');
                     }
                     root.Add(node); 
                 }
@@ -675,7 +676,7 @@ namespace dotless.Core.Parser
                         }
                     }
 
-                    args.Add(new NamedArgument { Name = name.ToString(), Value = value });
+                    args.Add(new NamedArgument { Name = name, Value = value });
 
                     if (!parser.Tokenizer.Match(expectedSeparator))
                         break;

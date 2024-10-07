@@ -84,7 +84,7 @@ using System.Text;
                               var v = new Variable('@' + m.Groups[1].Value) 
                                     { Location = new NodeLocation(Location.Index + m.Index, Location.Source, Location.FileName) }
                                     .Evaluate(env);
-                              return v is TextNode ? (v as TextNode).Value.ToString() : v.ToCSS(env);
+                              return v is TextNode ? (v as TextNode).Value.ToString() : v.ToCSS(env).ToString();
                           });
 
             return new Quoted(value, Quote, Escaped).ReducedFrom<Quoted>(this);

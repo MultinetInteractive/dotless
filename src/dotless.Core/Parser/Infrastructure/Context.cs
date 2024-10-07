@@ -233,17 +233,23 @@
         }
 
         public void AppendCSS(Env env) {
+
             var selectors = Paths
                 .Where(p => p.Any(s => !s.IsReference))
-                .Select(path => path.Select(p => p.ToCSS(env)).JoinStrings("").Trim())
-                .Distinct();
+                .Select(path =>
+                {
+                    var pml = new MemList();
+                    pml.AddRange(path.Select(p => p.ToCSS(env)));
+                    return pml.ToMemory().Trim();
+                }
+                ).Distinct(MemComparer.Default);
 
             env.Output.AppendMany(selectors, env.Compress ? ",".AsMemory() : ",\n".AsMemory());
         }
 
         public string ToCss(Env env)
         {
-            return string.Join(env.Compress ? "," : ",\n",Paths.Select(path => path.Select(p => p.ToCSS(env)).JoinStrings("").Trim()).ToArray());
+            return string.Join(env.Compress ? "," : ",\n",Paths.Select(path => path.Select(p => p.ToCSS(env).ToString()).JoinStrings("").Trim()).ToArray());
         }
 
         public int Count

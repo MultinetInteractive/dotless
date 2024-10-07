@@ -1,4 +1,4 @@
-namespace dotless.Core.Parser.Tree
+﻿namespace dotless.Core.Parser.Tree
 {
     using System;
     using System.Collections.Generic;
@@ -27,7 +27,7 @@ namespace dotless.Core.Parser.Tree
             Selectors = new NodeList<Selector> {new Selector(new NodeList<Element>(new Element(null, name)))};
 
             _arity = Params.Count;
-            _required = Params.Count(r => String.IsNullOrEmpty(r.Name) || r.Value == null);
+            _required = Params.Count(r => r.Name.Span.IsEmpty || r.Value == null);
         }
 
         public override Node Evaluate(Env env)
@@ -37,13 +37,13 @@ namespace dotless.Core.Parser.Tree
 
         public Ruleset EvaluateParams(Env env, List<NamedArgument> args)
         {
-            var arguments = new Dictionary<string, Node>();
+            var arguments = new Dictionary<ReadOnlyMemory<char>, Node>(MemComparer.Default);
             args = args ?? new List<NamedArgument>();
 
             var hasNamedArgs = false;
             foreach (var arg in args)
             {
-                if (!string.IsNullOrEmpty(arg.Name))
+                if (!arg.Name.Span.IsEmpty)
                 {
                     hasNamedArgs = true;
 
@@ -55,14 +55,14 @@ namespace dotless.Core.Parser.Tree
 
             for (var i = 0; i < Params.Count; i++)
             {
-                if (String.IsNullOrEmpty(Params[i].Name))
+                if (Params[i].Name.Span.IsEmpty)
                     continue;
 
                 if (arguments.ContainsKey(Params[i].Name))
                     continue;
 
                 Node val;
-                if (i < args.Count && string.IsNullOrEmpty(args[i].Name))
+                if (i < args.Count && args[i].Name.Span.IsEmpty)
                     val = args[i].Value;
                 else
                 {
@@ -167,9 +167,9 @@ namespace dotless.Core.Parser.Tree
 
             for (var i = 0; i < Math.Min(argsLength, _arity); i++)
             {
-                if (String.IsNullOrEmpty(Params[i].Name))
+                if (Params[i].Name.Span.IsEmpty)
                 {
-                    if (arguments[i].Value.Evaluate(env).ToCSS(env) != Params[i].Value.Evaluate(env).ToCSS(env))
+                    if (!arguments[i].Value.Evaluate(env).ToCSS(env).Span.SequenceEqual(Params[i].Value.Evaluate(env).ToCSS(env).Span))
                     {
                         return MixinMatch.ArgumentMismatch;
                     }

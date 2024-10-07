@@ -27,8 +27,8 @@ namespace dotless.Core.Parser.Tree {
         {
             return new TextNode(string.Format("[{0}{1}{2}]", 
                 Name.Evaluate(env).ToCSS(env),
-                Op == null ? "" : Op.Evaluate(env).ToCSS(env), 
-                Value == null ? "" :  Value.Evaluate(env).ToCSS(env)));
+                Op == null ? ReadOnlyMemory<char>.Empty : Op.Evaluate(env).ToCSS(env), 
+                Value == null ? ReadOnlyMemory<char>.Empty :  Value.Evaluate(env).ToCSS(env)));
         }
     }
 }

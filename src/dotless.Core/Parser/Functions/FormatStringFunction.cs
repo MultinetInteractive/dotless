@@ -1,4 +1,4 @@
-namespace dotless.Core.Parser.Functions
+﻿namespace dotless.Core.Parser.Functions
 {
     using System;
     using System.Linq;
@@ -16,7 +16,7 @@ namespace dotless.Core.Parser.Functions
             if (Arguments.Count == 0)
                 return new Quoted("", false);
 
-            Func<Node, string> unescape = n => n is Quoted ? ((Quoted) n).UnescapeContents() : n.ToCSS(env);
+            Func<Node, string> unescape = n => n is Quoted ? ((Quoted) n).UnescapeContents().ToString() : n.ToCSS(env).ToString();
 
             var format = unescape(Arguments[0]);
 
