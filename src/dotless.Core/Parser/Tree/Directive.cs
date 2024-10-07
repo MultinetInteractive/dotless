@@ -9,17 +9,11 @@
     public class Directive : Ruleset
     {
         public ReadOnlyMemory<char> Name { get; set; }
-        public string Identifier { get; set; }
+        public ReadOnlyMemory<char> Identifier { get; set; }
         public Node Value { get; set; }
 
-        public Directive(string name, string identifier, NodeList rules)
-        {
-            Name = name.AsMemory();
-            Rules = rules;
-            Identifier = identifier;
-        }
 
-        public Directive(ReadOnlyMemory<char> name, string identifier, NodeList rules)
+        public Directive(ReadOnlyMemory<char> name, ReadOnlyMemory<char> identifier, NodeList rules)
         {
             Name = name;
             Rules = rules;
@@ -89,7 +83,7 @@
 
             env.Output.Append(Name);
 
-            if (!string.IsNullOrEmpty(Identifier))
+            if (!Identifier.IsEmpty)
             {
                 env.Output.Append(" ");
                 env.Output.Append(Identifier);

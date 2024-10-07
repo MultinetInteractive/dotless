@@ -41,7 +41,7 @@
         //directives
         Import Import(Url path, Value features, ImportOptions option, NodeLocation location);
         Import Import(Quoted path, Value features, ImportOptions option, NodeLocation location);
-        Directive Directive(ReadOnlyMemory<char> name, string identifier, NodeList rules, NodeLocation location);
+        Directive Directive(ReadOnlyMemory<char> name, ReadOnlyMemory<char> identifier, NodeList rules, NodeLocation location);
         Directive Directive(ReadOnlyMemory<char> name, Node value, NodeLocation location);
         Media Media(NodeList rules, Value features, NodeLocation location);
         KeyFrame KeyFrame(NodeList identifier, NodeList rules, NodeLocation location);

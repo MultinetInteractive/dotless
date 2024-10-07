@@ -125,7 +125,7 @@
             return new Import(path, features, option) { Location = location };
         }
 
-        public Directive Directive(ReadOnlyMemory<char> name, string identifier, NodeList rules, NodeLocation location)
+        public Directive Directive(ReadOnlyMemory<char> name, ReadOnlyMemory<char> identifier, NodeList rules, NodeLocation location)
         {
             return new Directive(name, identifier, rules) { Location = location };
         }

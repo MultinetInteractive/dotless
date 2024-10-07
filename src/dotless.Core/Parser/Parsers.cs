@@ -1526,7 +1526,7 @@ namespace dotless.Core.Parser
                     break;
             }
 
-            string identifier = "";
+            ReadOnlyMemory<char> identifier = ReadOnlyMemory<char>.Empty;
 
             preComments = PullComments();
 
@@ -1537,7 +1537,7 @@ namespace dotless.Core.Parser
                 var identifierRegResult = parser.Tokenizer.MatchAny(identifierRegEx);
                 if (identifierRegResult != null)
                 {
-                    identifier = identifierRegResult.Value.ToString().Trim();
+                    identifier = identifierRegResult.Value.Trim();
                 }
             }
 
@@ -1699,7 +1699,7 @@ namespace dotless.Core.Parser
             return NodeProvider.Media(rules, features, parser.Tokenizer.GetNodeLocation(index));
         }
 
-        public Directive KeyFrameBlock(Parser parser, ReadOnlyMemory<char> name, string identifier, int index)
+        public Directive KeyFrameBlock(Parser parser, ReadOnlyMemory<char> name, ReadOnlyMemory<char> identifier, int index)
         {
             if (!parser.Tokenizer.Match('{'))
                 return null;
@@ -1955,7 +1955,8 @@ namespace dotless.Core.Parser
         {
             CharMatchResult negate = null;
 
-            if (parser.Tokenizer.CurrentChar == '-' && parser.Tokenizer.Peek(@"-[@\(]"))
+            char[] possibleNext = new[] { '@', '(' };
+            if (parser.Tokenizer.CurrentChar == '-' && possibleNext.Contains(parser.Tokenizer.NextChar))
             {
                 negate = parser.Tokenizer.Match('-');
                 GatherComments(parser);
