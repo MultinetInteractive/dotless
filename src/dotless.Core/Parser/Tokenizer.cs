@@ -270,6 +270,67 @@ namespace dotless.Core.Parser
             return Match(tok, false);
         }
 
+        public RegexMatchResult MatchExact(string tok)
+        {
+            if (_i == _inputLength || _chunks[_j].Type != ChunkType.Text)
+            {
+                return null;
+            }
+
+            var startingPosition = _i - _current;
+
+            if (startingPosition + tok.Length >= _chunks[_j].Value.Length)
+                return null;
+
+            var index = _i;
+            var length = tok.Length;
+
+            var spanToCompare = _chunks[_j].Value.Slice(startingPosition, length);
+
+            if (tok.AsSpan().Equals(spanToCompare.Span, StringComparison.Ordinal))
+            {
+                Advance(length);
+                return new RegexMatchResult(spanToCompare, GetNodeLocation(index));
+            }
+
+            return null;
+        }
+
+        public RegexMatchResult MatchInt()
+        {
+            if (_i == _inputLength || _chunks[_j].Type != ChunkType.Text)
+            {
+                return null;
+            }
+
+            var startingPosition = _i - _current;
+
+            var x = 0;
+
+            char Current()
+            {
+                return _chunks[_j].Value.Span[startingPosition + x];
+            }
+
+            while (_chunks[_j].Value.Length > (startingPosition + x) && char.IsDigit(Current()))
+            {
+                x++;
+            }
+
+            if(x > 0)
+            {
+                var res = new RegexMatchResult(_chunks[_j].Value.Slice(startingPosition, x), GetNodeLocation(startingPosition));
+                Advance(x);
+
+                return res;
+            }
+            else
+            { 
+                return null; 
+            }
+
+        }
+
         public RegexMatchResult MatchIdentifier()
         {
             if (_i == _inputLength || _chunks[_j].Type != ChunkType.Text)
@@ -357,7 +418,7 @@ namespace dotless.Core.Parser
 
             var regex = GetRegex(tok, options);
 
-            var match = regex.Match(_chunks[_j].Value.ToString(), _i - _current);
+            var match = regex.Match(_chunks[_j].Value.Slice(_i - _current).ToString());
 
             if (!match.Success)
                 return null;

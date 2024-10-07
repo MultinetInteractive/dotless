@@ -431,7 +431,7 @@ namespace dotless.Core.Parser
                 GatherComments(parser);
             }
 
-            if (parser.Tokenizer.Match(@"when"))
+            if (parser.Tokenizer.MatchExact(@"when"))
             {
                 GatherAndPullComments(parser);
 
@@ -805,7 +805,7 @@ namespace dotless.Core.Parser
 
             GatherAndPullComments(parser);
 
-            if (parser.Tokenizer.Match("when"))
+            if (parser.Tokenizer.MatchExact("when"))
             {
                 GatherAndPullComments(parser);
 
@@ -854,7 +854,7 @@ namespace dotless.Core.Parser
             Condition condition;
             //var a, b, c, op, index = i, negate = false;
 
-            if (parser.Tokenizer.Match("not"))
+            if (parser.Tokenizer.MatchExact("not"))
             {
                 negate = true;
             }
@@ -878,7 +878,7 @@ namespace dotless.Core.Parser
 
             Expect(parser, ')');
 
-            if (parser.Tokenizer.Match("and"))
+            if (parser.Tokenizer.MatchExact("and"))
             {
                 return NodeProvider.Condition(condition, "and", Condition(parser), false, parser.Tokenizer.GetNodeLocation(index));
             }
@@ -956,7 +956,7 @@ namespace dotless.Core.Parser
             if (!parser.Tokenizer.Match(@"opacity\s*=\s*", true))
                 return null;
 
-            if (value = parser.Tokenizer.Match(@"[0-9]+") || Variable(parser))
+            if (value = parser.Tokenizer.MatchInt() || Variable(parser))
             {
                 Expect(parser, ')');
 
@@ -1669,7 +1669,7 @@ namespace dotless.Core.Parser
 
                 features.Add(feature);
 
-                if (!parser.Tokenizer.Match(","))
+                if (!parser.Tokenizer.Match(','))
                     break;
             }
 
@@ -1727,7 +1727,7 @@ namespace dotless.Core.Parser
 
                     GatherComments(parser);
 
-                    if(!parser.Tokenizer.Match(","))
+                    if(!parser.Tokenizer.Match(','))
                         break;
 
                     GatherComments(parser);
