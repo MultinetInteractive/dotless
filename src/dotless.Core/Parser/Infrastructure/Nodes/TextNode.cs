@@ -3,9 +3,14 @@ namespace dotless.Core.Parser.Infrastructure.Nodes
 {
     public class TextNode : Node, IComparable
     {
-        public string Value { get; set; }
+        public ReadOnlyMemory<char> Value { get; set; }
 
         public TextNode(string contents)
+        {
+            Value = contents.AsMemory();
+        }
+
+        public TextNode(ReadOnlyMemory<char> contents)
         {
             Value = contents;
         }
@@ -26,12 +31,12 @@ namespace dotless.Core.Parser.Infrastructure.Nodes
 
         public override void AppendCSS(Env env)
         {
-            env.Output.Append(env.Compress ? Value.Trim() : Value);
+            env.Output.Append(env.Compress ? new ReadOnlyMemory<char>(Value.Span.Trim().ToArray()) : Value);
         }
 
         public override string ToString()
         {
-            return Value;
+            return Value.ToString();
         }
 
         public virtual int CompareTo(object obj)

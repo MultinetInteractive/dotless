@@ -9,6 +9,7 @@
     using Exceptions;
     using Plugins;
     using dotless.Core.Importers;
+    using System;
 
     public class Url : Node
     {
@@ -39,7 +40,7 @@
             var textValue = Value as TextNode;
             if (textValue != null)
             {
-                return textValue.Value;
+                return textValue.Value.ToString();
             }
 
             return null;
@@ -57,7 +58,7 @@
         {
             if (Importer != null)
             {
-                textValue.Value = Importer.AlterUrl(textValue.Value, ImportPaths);
+                textValue.Value = Importer.AlterUrl(textValue.Value.ToString(), ImportPaths).AsMemory();
             }
             return textValue;
         }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using dotless.Core.Plugins;
 
@@ -138,7 +138,7 @@ namespace dotless.Core.Parser.Tree
             var quoted = OriginalPath as Quoted;
             if (quoted != null)
             {
-                Path = quoted.Value;
+                Path = quoted.Value.ToString();
             }
 
             ImportAction action = GetImportAction(env.Parser.Importer);

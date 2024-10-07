@@ -16,7 +16,7 @@
 
             try
             {
-                return Color.From(node.Value);
+                return Color.From(node.Value.ToString());
             }
             catch (FormatException ex)
             {

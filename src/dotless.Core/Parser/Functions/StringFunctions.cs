@@ -1,4 +1,4 @@
-namespace dotless.Core.Parser.Functions
+﻿namespace dotless.Core.Parser.Functions
 {
     using System;
     using System.Linq;
@@ -37,7 +37,7 @@ namespace dotless.Core.Parser.Functions
             if (Arguments.Count == 0)
                 return new Quoted("", false);
 
-            Func<Node, string> stringValue = n => n is Quoted ? ((Quoted)n).Value : n.ToCSS(env);
+            Func<Node, string> stringValue = n => n is Quoted ? ((Quoted)n).Value.ToString() : n.ToCSS(env);
 
             var str = stringValue(Arguments[0]);
 

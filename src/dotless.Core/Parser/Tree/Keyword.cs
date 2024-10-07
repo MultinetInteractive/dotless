@@ -6,16 +6,21 @@
 
     public class Keyword : Node, IComparable
     {
-        public string Value { get; set; }
+        public ReadOnlyMemory<char> Value { get; set; }
 
         public Keyword(string value)
+        {
+            Value = value.AsMemory();
+        }
+
+        public Keyword(ReadOnlyMemory<char> value)
         {
             Value = value;
         }
 
         public override Node Evaluate(Env env)
         {
-            return ((Node) Color.GetColorFromKeyword(Value) ?? this).ReducedFrom<Node>(this);
+            return ((Node) Color.GetColorFromKeyword(Value.ToString()) ?? this).ReducedFrom<Node>(this);
         }
 
         protected override Node CloneCore() {
@@ -29,7 +34,7 @@
 
         public override string ToString()
         {
-            return Value;
+            return Value.ToString();
         }
 
         public int CompareTo(object obj)

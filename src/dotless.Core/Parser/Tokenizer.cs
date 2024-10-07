@@ -11,6 +11,7 @@ namespace dotless.Core.Parser
     using Exceptions;
     using Infrastructure.Nodes;
     using Utils;
+    using static System.Net.Mime.MediaTypeNames;
 
     [DebuggerDisplay("{Remaining}")]
     public class Tokenizer
@@ -177,7 +178,7 @@ namespace dotless.Core.Parser
                 {
                     return null;
                 }
-                val = comment.Value.AsMemory();
+                val = comment.Value;
                 endI = startI + comment.Value.Length;
             }
             else
@@ -216,7 +217,7 @@ namespace dotless.Core.Parser
                     return null;
                 
                 var quotedstring = this.Match(this._quotedRegEx);
-                return quotedstring.Value.AsMemory();
+                return quotedstring.Value;
             } else {
                 if (_chunks[_j].Type == ChunkType.QuotedString) {
                     ReadOnlyMemory<char> val = _chunks[_j].Value;
@@ -231,14 +232,14 @@ namespace dotless.Core.Parser
         {
             var c = Match(tok);
 
-            return c == null ? null : c.Value;
+            return c == null ? null : c.Value.ToString();
         }
 
         public string MatchString(string tok)
         {
             var match = Match(tok);
 
-            return match == null ? null : match.Value;
+            return match == null ? null : match.Value.ToString();
         }
 
         //
@@ -267,6 +268,81 @@ namespace dotless.Core.Parser
         public RegexMatchResult Match(string tok)
         {
             return Match(tok, false);
+        }
+
+        public RegexMatchResult MatchIdentifier()
+        {
+            if (_i == _inputLength || _chunks[_j].Type != ChunkType.Text)
+            {
+                return null;
+            }
+
+            var startingPosition = _i - _current;
+
+            var x = 0;
+
+            char Current()
+            {
+                return _chunks[_j].Value.Span[startingPosition + x];
+            }
+
+            if (Current() != '@')
+                return null;
+
+            x++;
+
+            if (Current() == '@') //allow one more @ char
+                x++;
+
+            while (_chunks[_j].Value.Length > (startingPosition + x) && (char.IsLetterOrDigit(Current()) || Current() == '_' || Current() == '-'))
+            {
+                x++;
+            }
+
+            if (x > 1)
+            {
+                var res = new RegexMatchResult(_chunks[_j].Value.Slice(startingPosition, x), GetNodeLocation(startingPosition));
+                Advance(x);
+
+                return res;
+            }
+            else //just an @ character
+            {
+                return null;
+            }
+        }
+        public RegexMatchResult MatchKeyword()
+        {
+            if (_i == _inputLength || _chunks[_j].Type != ChunkType.Text)
+            {
+                return null;
+            }
+
+            var startingPosition = _i - _current;
+
+            var x = 0;
+
+            char Current()
+            {
+                return _chunks[_j].Value.Span[startingPosition + x];
+            }
+
+            while (_chunks[_j].Value.Length > (startingPosition + x) && (char.IsLetterOrDigit(Current()) || Current() == '_' || Current() == '-'))
+            {
+                x++;
+            }
+
+            if(x > 0)
+            {
+                var res = new RegexMatchResult(_chunks[_j].Value.Slice(startingPosition, x), GetNodeLocation(startingPosition));
+                Advance(x);
+
+                return res;
+            }
+            else //nothing
+            {
+                return null;
+            }
         }
 
         public RegexMatchResult Match(string tok, bool caseInsensitive)

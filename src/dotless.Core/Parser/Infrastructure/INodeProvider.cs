@@ -1,5 +1,6 @@
-namespace dotless.Core.Parser.Infrastructure
+﻿namespace dotless.Core.Parser.Infrastructure
 {
+    using System;
     using System.Collections.Generic;
     using Importers;
     using Nodes;
@@ -21,9 +22,11 @@ namespace dotless.Core.Parser.Infrastructure
         Call Call(string name, NodeList<Node> arguments, NodeLocation location);
         Color Color(string rgb, NodeLocation location);
         Keyword Keyword(string value, NodeLocation location);
+        Keyword Keyword(ReadOnlyMemory<char> value, NodeLocation location);
         Number Number(string value, string unit, NodeLocation location);
         Shorthand Shorthand(Node first, Node second, NodeLocation location);
         Variable Variable(string name, NodeLocation location);
+        Variable Variable(ReadOnlyMemory<char> name, NodeLocation location);
         Url Url(Node value, IImporter importer, NodeLocation location);
         Script Script(string script, NodeLocation location);
         Paren Paren(Node node, NodeLocation location);

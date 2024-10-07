@@ -43,7 +43,7 @@ using System.Text;
 
         protected override Node CloneCore()
         {
-            return new Quoted(Value, Quote, Escaped);
+            return new Quoted(Value.ToString(), Quote, Escaped);
         }
 
         public override void AppendCSS(Env env)
@@ -63,7 +63,7 @@ using System.Text;
 
             if (Quote.HasValue)
                 list.Add(new[] { Quote.Value });
-            list.Add(Value.AsMemory());
+            list.Add(Value);
 
             if (Quote.HasValue)
                 list.Add(new[] { Quote.Value });
@@ -78,13 +78,13 @@ using System.Text;
 
         public override Node Evaluate(Env env)
         {
-            var value = Regex.Replace(Value, @"@\{([\w-]+)\}",
+            var value = Regex.Replace(Value.ToString(), @"@\{([\w-]+)\}",
                           m =>
                           {
                               var v = new Variable('@' + m.Groups[1].Value) 
                                     { Location = new NodeLocation(Location.Index + m.Index, Location.Source, Location.FileName) }
                                     .Evaluate(env);
-                              return v is TextNode ? (v as TextNode).Value : v.ToCSS(env);
+                              return v is TextNode ? (v as TextNode).Value.ToString() : v.ToCSS(env);
                           });
 
             return new Quoted(value, Quote, Escaped).ReducedFrom<Quoted>(this);
@@ -94,7 +94,7 @@ using System.Text;
 
         public string UnescapeContents()
         {
-            return _unescape.Replace(Value, @"$1$2");
+            return _unescape.Replace(Value.ToString(), @"$1$2");
         }
     }
 }

@@ -1,5 +1,6 @@
-namespace dotless.Core.Parser.Infrastructure
+﻿namespace dotless.Core.Parser.Infrastructure
 {
+    using System;
     using System.Collections.Generic;
     using Importers;
     using Nodes;
@@ -64,6 +65,11 @@ namespace dotless.Core.Parser.Infrastructure
             return new Keyword(value) { Location = location };
         }
 
+        public Keyword Keyword(ReadOnlyMemory<char> value, NodeLocation location)
+        {
+            return new Keyword(value) { Location = location };
+        }
+
         public Number Number(string value, string unit, NodeLocation location)
         {
             return new Number(value, unit) { Location = location };
@@ -75,6 +81,11 @@ namespace dotless.Core.Parser.Infrastructure
         }
 
         public Variable Variable(string name, NodeLocation location)
+        {
+            return new Variable(name) { Location = location };
+        }
+
+        public Variable Variable(ReadOnlyMemory<char> name, NodeLocation location)
         {
             return new Variable(name) { Location = location };
         }
@@ -176,7 +187,7 @@ namespace dotless.Core.Parser.Infrastructure
 
         public Node Attribute(Node key, Node op, Node val, NodeLocation location)
         {
-            return new Attribute(key, op, val) { Location = location };
+            return new dotless.Core.Parser.Tree.Attribute(key, op, val) { Location = location };
         }
 
         public Paren Paren(Node value, NodeLocation location)

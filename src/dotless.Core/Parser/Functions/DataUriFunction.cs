@@ -31,10 +31,10 @@
             Guard.ExpectNode<Quoted>(filenameNode, this, Location);
             var filename = ((Quoted)filenameNode).Value;
 
-            Guard.Expect(!(filename.StartsWith("http://") || filename.StartsWith("https://")),
+            Guard.Expect(!(filename.Span.StartsWith("http://".AsSpan()) || filename.Span.StartsWith("https://".AsSpan())),
                 string.Format("Invalid filename passed to data-uri '{0}'. Filename must be a local file", filename), Location);
 
-            return filename;
+            return filename.ToString();
         }
 
         private string ConvertFileToBase64(string filename)
@@ -58,7 +58,7 @@
             if (Arguments.Count > 1)
             {
                 Guard.ExpectNode<Quoted>(Arguments[0], this, Location);
-                var mimeType = ((Quoted) Arguments[0]).Value;
+                var mimeType = ((Quoted) Arguments[0]).Value.ToString();
 
                 if (mimeType.IndexOf(';') > -1)
                     mimeType = mimeType.Split(';')[0];

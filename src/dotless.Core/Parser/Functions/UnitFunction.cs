@@ -19,7 +19,7 @@
             {
                 if (Arguments[1] is Keyword)
                 {
-                    unit = ((Keyword)Arguments[1]).Value;
+                    unit = ((Keyword)Arguments[1]).Value.ToString();
                 }
                 else
                 {

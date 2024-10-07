@@ -78,6 +78,13 @@
             return this;
         }
 
+        public Output Append(ReadOnlyMemory<char> s)
+        {
+            Builder.Add(s);
+
+            return this;
+        }
+
         public Output Append(char? s)
         {
             if (s.HasValue)

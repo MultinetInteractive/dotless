@@ -19,7 +19,7 @@
         {
             if (value is TextNode textValue && !(value is Quoted))
             {
-                Value = textValue.Value.Trim();
+                Value = textValue.Value.ToString().Trim();
             }
             else
             {
