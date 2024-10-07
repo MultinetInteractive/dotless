@@ -40,6 +40,7 @@ namespace dotless.Core.Parser
 {
     using System.Collections.Generic;
     using System.Linq;
+    using System.Runtime.InteropServices.ComTypes;
     using Exceptions;
     using Infrastructure;
     using Infrastructure.Nodes;
@@ -246,16 +247,43 @@ namespace dotless.Core.Parser
             var memo = Remember(parser);
             var index = parser.Tokenizer.Location.Index;
 
-            var name = parser.Tokenizer.Match(@"(%|[a-zA-Z0-9_-]+|progid:[\w\.]+)\(");
+            var callName = string.Empty;
+            RegexMatchResult matchResult = null;
 
-            if (!name)
-                return null;
-
-            if (name[1].ToLowerInvariant() == "alpha")
+            if (parser.Tokenizer.PeekChar() == '%' && parser.Tokenizer.PeekChar(1) == '(')
             {
-                var alpha = Alpha(parser);
-                if (alpha != null)
-                    return alpha;
+                callName = "%";
+                parser.Tokenizer.Advance(2);
+            }
+            else
+            {
+                var keywordMemo = Remember(parser);
+
+                var keyword = parser.Tokenizer.MatchKeyword();
+
+                if(keyword && parser.Tokenizer.PeekChar() == '(')
+                {
+                    parser.Tokenizer.Advance(1); //move past the (
+                    callName = keyword.Value.ToString();
+
+                    if (callName.Equals("alpha", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var alpha = Alpha(parser);
+                        if (alpha != null)
+                            return alpha;
+                    }
+                }
+                else
+                {
+                    Recall(parser, keywordMemo);
+
+                    var name = parser.Tokenizer.Match(@"(progid:[\w\.]+)\(");
+
+                    if (!name)
+                        return null;
+
+                    callName = name[1];
+                }
             }
 
             var args = Arguments(parser);
@@ -266,7 +294,7 @@ namespace dotless.Core.Parser
                 return null;
             }
 
-            return NodeProvider.Call(name[1], args, parser.Tokenizer.GetNodeLocation(index));
+            return NodeProvider.Call(callName, args, parser.Tokenizer.GetNodeLocation(index));
         }
 
         public NodeList<Node> Arguments(Parser parser)
@@ -1840,7 +1868,7 @@ namespace dotless.Core.Parser
 
         public string IESlash9Hack(Parser parser)
         {
-            var slashNine = parser.Tokenizer.Match(@"\\9");
+            var slashNine = parser.Tokenizer.MatchExact("\\9");
             return slashNine == null ? "" : slashNine.Value.ToString();
         }
 

@@ -559,6 +559,22 @@ namespace dotless.Core.Parser
             return peekSuccess;
         }
 
+        public char? PeekChar(int offset = 0)
+        {
+            if (_i == _inputLength || _chunks[_j].Type != ChunkType.Text)
+            {
+                return null;
+            }
+
+            var startingPosition = _i - _current;
+
+            if (_chunks[_j].Value.Span.Length > (startingPosition + offset))
+            {
+                return _chunks[_j].Value.Span[startingPosition + offset];
+            }
+            return null;
+        }
+
         private Regex GetRegex(string pattern, RegexOptions options)
         {
             if (!regexCache.ContainsKey(pattern))
