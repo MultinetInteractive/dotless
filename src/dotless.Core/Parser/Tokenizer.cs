@@ -74,12 +74,10 @@ namespace dotless.Core.Parser
                     Match match;
                     if (_input.Span[i] == '@')
                     {
-                        var slice = input.Slice(i);
-
-                        match = skip.Match(slice.ToString());
+                        match = skip.Match(_input.ToString(), i);
                         if (match.Success)
                         {
-                            Chunk.Append(slice.Slice(0, match.Value.Length), _chunks);
+                            Chunk.Append(match.Value.AsMemory(), _chunks);
                             i += match.Length;
                             continue;
                         }
@@ -92,13 +90,11 @@ namespace dotless.Core.Parser
                         var cc = _input.Span[i + 1];
                         if ((!inParam && cc == '/') || cc == '*')
                         {
-                            var slice = input.Slice(i);
-
-                            match = comment.Match(slice.ToString());
+                            match = comment.Match(_input.ToString(), i);
                             if(match.Success)
                             {
                                 i += match.Length;
-                                _chunks.Add(new Chunk(slice.Slice(0, match.Value.Length), ChunkType.Comment));
+                                _chunks.Add(new Chunk(match.Value.AsMemory(), ChunkType.Comment));
                                 continue;
                             } else
                             {
@@ -109,13 +105,11 @@ namespace dotless.Core.Parser
                     
                     if(c == '"' || c == '\'')
                     {
-
-                        var slice = input.Slice(i);
-                        match = quotedstring.Match(slice.ToString());
+                        match = quotedstring.Match(_input.ToString(), i);
                         if(match.Success)
                         {
                             i += match.Length;
-                            _chunks.Add(new Chunk(slice.Slice(0, match.Value.Length), ChunkType.QuotedString));
+                            _chunks.Add(new Chunk(match.Value.AsMemory(), ChunkType.QuotedString));
                             continue;
                         } else
                         {
