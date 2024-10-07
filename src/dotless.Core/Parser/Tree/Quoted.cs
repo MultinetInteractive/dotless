@@ -14,24 +14,24 @@ using System.Text;
         public char? Quote { get; set; }
         public bool Escaped { get; set; }
 
-        public Quoted(string value, char? quote)
+        public Quoted(ReadOnlyMemory<char> value, char? quote)
             : base(value)
         {
             Quote = quote;
         }
 
-        public Quoted(string value, char? quote, bool escaped)
+        public Quoted(ReadOnlyMemory<char> value, char? quote, bool escaped)
             : base(value)
         {
             Escaped = escaped;
             Quote = quote;
         }
 
-        public Quoted(string value, string contents, bool escaped)
+        public Quoted(ReadOnlyMemory<char> value, ReadOnlyMemory<char> contents, bool escaped)
             : base(contents)
         {
             Escaped = escaped;
-            Quote = value[0];
+            Quote = value.Span[0];
         }
 
         public Quoted(string value, bool escaped)
@@ -43,7 +43,7 @@ using System.Text;
 
         protected override Node CloneCore()
         {
-            return new Quoted(Value.ToString(), Quote, Escaped);
+            return new Quoted(Value, Quote, Escaped);
         }
 
         public override void AppendCSS(Env env)
@@ -87,7 +87,7 @@ using System.Text;
                               return v is TextNode ? (v as TextNode).Value.ToString() : v.ToCSS(env).ToString();
                           });
 
-            return new Quoted(value, Quote, Escaped).ReducedFrom<Quoted>(this);
+            return new Quoted(value.AsMemory(), Quote, Escaped).ReducedFrom<Quoted>(this);
         }
 
         private readonly Regex _unescape = new Regex(@"(^|[^\\])\\(['""])");

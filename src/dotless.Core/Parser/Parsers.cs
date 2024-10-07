@@ -175,7 +175,7 @@ namespace dotless.Core.Parser
 
             if (!comment.Span.IsEmpty)
             {
-                return NodeProvider.Comment(comment.ToString(), parser.Tokenizer.GetNodeLocation(index));
+                return NodeProvider.Comment(comment, parser.Tokenizer.GetNodeLocation(index));
             }
 
             return null;
@@ -207,12 +207,12 @@ namespace dotless.Core.Parser
             if (escaped)
                 parser.Tokenizer.Match('~');
 
-            string str = parser.Tokenizer.GetQuotedString().ToString();
+            var str = parser.Tokenizer.GetQuotedString();
 
-            if (str == null)
+            if (str.IsEmpty)
                 return null;
 
-            return NodeProvider.Quoted(str, str.Substring(1, str.Length - 2), escaped, parser.Tokenizer.GetNodeLocation(index));
+            return NodeProvider.Quoted(str, str.Slice(1, str.Length - 2), escaped, parser.Tokenizer.GetNodeLocation(index));
         }
 
         //
@@ -1624,7 +1624,7 @@ namespace dotless.Core.Parser
                         var unrecognised = parser.Tokenizer.Match(@"[^\){]+");
                         if (unrecognised)
                         {
-                            entity = NodeProvider.TextNode(unrecognised.Value.ToString(), parser.Tokenizer.GetNodeLocation());
+                            entity = NodeProvider.TextNode(unrecognised.Value, parser.Tokenizer.GetNodeLocation());
                             Expect(parser, ')');
                         }
                     }

@@ -56,9 +56,9 @@
         Assignment Assignment(string key, Node value, NodeLocation location);
 
         //text
-        Comment Comment(string value, NodeLocation location);
-        TextNode TextNode(string contents, NodeLocation location);
-        Quoted Quoted(string value, string contents, bool escaped, NodeLocation location);
+        Comment Comment(ReadOnlyMemory<char> value, NodeLocation location);
+        TextNode TextNode(ReadOnlyMemory<char> contents, NodeLocation location);
+        Quoted Quoted(ReadOnlyMemory<char> value, ReadOnlyMemory<char> contents, bool escaped, NodeLocation location);
 
         //extenders
         Extend Extend(List<Selector> exact, List<Selector> partial, NodeLocation location);

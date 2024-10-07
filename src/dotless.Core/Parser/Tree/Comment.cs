@@ -1,22 +1,23 @@
 ﻿namespace dotless.Core.Parser.Tree
 {
+    using System;
     using Infrastructure;
     using Infrastructure.Nodes;
 
     public class Comment : Node
     {
-        public string Value { get; set; }
+        public ReadOnlyMemory<char> Value { get; set; }
         public bool IsValidCss { get; set; }
         public bool IsSpecialCss { get; set; }
         public bool IsPreSelectorComment { get; set; }
         private bool IsCSSHack { get; set; }
 
-        public Comment(string value)
+        public Comment(ReadOnlyMemory<char> value)
         {
             Value = value;
-            IsValidCss = !value.StartsWith("//");
-            IsSpecialCss = value.StartsWith("/**") || value.StartsWith("/*!");
-            IsCSSHack = value == "/**/" || value == "/*\\*/";
+            IsValidCss = !value.Span.StartsWith("//".AsSpan());
+            IsSpecialCss = value.Span.StartsWith("/**".AsSpan()) || value.Span.StartsWith("/*!".AsSpan());
+            IsCSSHack = value.Span.SequenceEqual("/**/".AsSpan()) || value.Span.SequenceEqual("/*\\*/".AsSpan());
         }
 
         protected override Node CloneCore() {

@@ -55,7 +55,7 @@ namespace dotless.Core.Parser.Tree
 
             var css = env.Output.Pop();
 
-            return new TextNode(css.ToString()).ReducedFrom<Node>(this);
+            return new TextNode(css.ToMemory()).ReducedFrom<Node>(this);
         }
 
         public override void Accept(IVisitor visitor)

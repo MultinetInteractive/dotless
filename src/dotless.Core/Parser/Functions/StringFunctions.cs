@@ -59,7 +59,7 @@
 
             var quote = Arguments[0] is Quoted ? (Arguments[0] as Quoted).Quote : null;
 
-            return new Quoted(str.ToString(), quote);
+            return new Quoted(str, quote);
         }
     }
 }

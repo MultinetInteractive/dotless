@@ -165,17 +165,17 @@
             return new Assignment(key, value) {Location = location};
         }
 
-        public Comment Comment(string value, NodeLocation location)
+        public Comment Comment(ReadOnlyMemory<char> value, NodeLocation location)
         {
             return new Comment(value) { Location = location };
         }
 
-        public TextNode TextNode(string contents, NodeLocation location)
+        public TextNode TextNode(ReadOnlyMemory<char> contents, NodeLocation location)
         {
             return new TextNode(contents) { Location = location };
         }
 
-        public Quoted Quoted(string value, string contents, bool escaped, NodeLocation location)
+        public Quoted Quoted(ReadOnlyMemory<char> value, ReadOnlyMemory<char> contents, bool escaped, NodeLocation location)
         {
             return new Quoted(value, contents, escaped) { Location = location };
         }
