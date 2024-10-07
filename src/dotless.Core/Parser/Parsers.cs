@@ -371,7 +371,7 @@ namespace dotless.Core.Parser
             var index = parser.Tokenizer.Location.Index;
 
             if (name = parser.Tokenizer.MatchIdentifier())
-                return NodeProvider.Variable(name.Value.ToString(), parser.Tokenizer.GetNodeLocation(index));
+                return NodeProvider.Variable(name.Value, parser.Tokenizer.GetNodeLocation(index));
 
             return null;
         }
