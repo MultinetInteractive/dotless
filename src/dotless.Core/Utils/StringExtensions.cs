@@ -93,5 +93,80 @@
             // segments (and therefore strip leading slashes)
             return string.Join("/", pathList.ToArray());
         }
+
+        public static ReadOnlyMemory<char> Trim(this ReadOnlyMemory<char> input, char? c = null)
+        {
+            return input.TrimLeft(c).TrimRight(c);
+        }
+
+        public static ReadOnlyMemory<char> TrimLeft(this ReadOnlyMemory<char> input, char? c)
+        {
+            int trimLength = 0;
+            if (c.HasValue)
+            {
+                while (input.Length > trimLength)
+                {
+                    if (input.Span[trimLength] == c.Value)
+                    {
+                        trimLength++;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                while (input.Length > trimLength)
+                {
+                    if (char.IsWhiteSpace(input.Span[trimLength]))
+                    {
+                        trimLength++;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return input.Slice(trimLength);
+        }
+
+        public static ReadOnlyMemory<char> TrimRight(this ReadOnlyMemory<char> input, char? c)
+        {
+            int lastIndex = input.Length - 1;
+            if (c.HasValue)
+            {
+                while (lastIndex >= 0)
+                {
+                    if (input.Span[lastIndex] == c.Value)
+                    {
+                        lastIndex--;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                while (lastIndex >= 0)
+                {
+                    if (char.IsWhiteSpace(input.Span[lastIndex]))
+                    {
+                        lastIndex--;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return input.Slice(0, lastIndex + 1);
+        }
     }
 }

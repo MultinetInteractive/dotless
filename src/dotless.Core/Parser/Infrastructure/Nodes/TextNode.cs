@@ -1,4 +1,6 @@
 ﻿using System;
+using dotless.Core.Utils;
+
 namespace dotless.Core.Parser.Infrastructure.Nodes
 {
     public class TextNode : Node, IComparable
@@ -31,7 +33,7 @@ namespace dotless.Core.Parser.Infrastructure.Nodes
 
         public override void AppendCSS(Env env)
         {
-            env.Output.Append(env.Compress ? new ReadOnlyMemory<char>(Value.Span.Trim().ToArray()) : Value);
+            env.Output.Append(env.Compress ? Value.Trim() : Value);
         }
 
         public override string ToString()
