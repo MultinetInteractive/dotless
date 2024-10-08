@@ -248,7 +248,6 @@ namespace dotless.Core.Parser
             var index = parser.Tokenizer.Location.Index;
 
             var callName = ReadOnlyMemory<char>.Empty;
-            RegexMatchResult matchResult = null;
 
             if (parser.Tokenizer.PeekChar() == '%' && parser.Tokenizer.PeekChar(1) == '(')
             {
@@ -277,12 +276,16 @@ namespace dotless.Core.Parser
                 {
                     Recall(parser, keywordMemo);
 
-                    var name = parser.Tokenizer.Match(@"(progid:[\w\.]+)\(");
+                    var progid = parser.Tokenizer.MatchProgid();
 
-                    if (!name)
-                        return null;
+                    if (!progid || parser.Tokenizer.PeekChar() != '(')
+                    {
+                        Recall(parser, keywordMemo);
+                        return null;.ToString
+                    }
+                    parser.Tokenizer.Advance(1); //move past the (
 
-                    callName = name[1].AsMemory();
+                    callName = progid.Value;
                 }
             }
 
@@ -482,10 +485,15 @@ namespace dotless.Core.Parser
         /// <returns></returns>
         public Extend ExtendRule(Parser parser)
         {
-            RegexMatchResult extendKeyword;
             var index = parser.Tokenizer.Location.Index;
 
-            if ((extendKeyword = parser.Tokenizer.Match(@"\&?:extend\(")) != null)
+            var memo = Remember(parser);
+
+            var foundAmpersand = parser.Tokenizer.Match('&');
+            var extendKeyword = parser.Tokenizer.MatchExact(":extend(");
+
+
+            if (extendKeyword)
             {
                 var exact = new List<Selector>();
                 var partial = new List<Selector>();
@@ -519,7 +527,7 @@ namespace dotless.Core.Parser
                     throw new ParsingException(@"Extend rule not correctly terminated",parser.Tokenizer.GetNodeLocation(index));
                 }
 
-                if (extendKeyword.Match.Value[0] == '&')
+                if (foundAmpersand)
                 {
                     parser.Tokenizer.Match(';');
                 }
@@ -531,6 +539,8 @@ namespace dotless.Core.Parser
 
                 return NodeProvider.Extend(exact,partial, parser.Tokenizer.GetNodeLocation(index));
             }
+
+            Recall(parser, memo);
             return null;
         }
 
@@ -964,10 +974,15 @@ namespace dotless.Core.Parser
         // declarations, and those semicolons may be separated by whitespace.
         public bool End(Parser parser)
         {
-            // The regular expression searches for a semicolon which may be followed by whitespace and other semicolons.
-            const string SemicolonSearch = @";[;\s]*";
+            // Searches for a semicolon which may be followed by whitespace and other semicolons.
+            var semi = parser.Tokenizer.Match(';');
 
-            return parser.Tokenizer.Match(SemicolonSearch) || parser.Tokenizer.Peek('}');
+            if(semi)
+            {
+                while (parser.Tokenizer.Match(';') || parser.Tokenizer.ConsumeWhitespace()) ;
+            }
+
+            return semi || parser.Tokenizer.Peek('}');
         }
 
         //

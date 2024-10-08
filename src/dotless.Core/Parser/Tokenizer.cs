@@ -349,6 +349,48 @@ namespace dotless.Core.Parser
             return null;
         }
 
+        public RegexMatchResult MatchProgid()
+        {
+            if (_i == _inputLength || _chunks[_j].Type != ChunkType.Text)
+            {
+                return null;
+            }
+
+            var startingPosition = _i - _current;
+
+            //8 is progId + at least one word character
+            if (startingPosition + 8 > _chunks[_j].Value.Length)
+                return null;
+
+            if (!_chunks[_j].Value.Slice(startingPosition, 7).Span.SequenceEqual("progid:".AsSpan()))
+                return null;
+
+            var x = 7;
+
+            char Current()
+            {
+                return _chunks[_j].Value.Span[startingPosition + x];
+            }
+
+            while (_chunks[_j].Value.Length > (startingPosition + x) && (char.IsLetterOrDigit(Current()) || Current() == '_' || Current() == '.'))
+            {
+                x++;
+            }
+
+            //we need at least one character after progid:
+            if (x > 7)
+            {
+                var res = new RegexMatchResult(_chunks[_j].Value.Slice(startingPosition, x), GetNodeLocation(startingPosition));
+                Advance(x);
+
+                return res;
+            }
+            else //nothing
+            {
+                return null;
+            }
+        }
+
         public RegexMatchResult MatchInt()
         {
             if (_i == _inputLength || _chunks[_j].Type != ChunkType.Text)
