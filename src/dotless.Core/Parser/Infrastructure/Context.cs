@@ -242,7 +242,7 @@
                     pml.AddRange(path.Select(p => p.ToCSS(env)));
                     return pml.ToMemory().Trim();
                 }
-                ).Distinct(MemComparer.Default);
+                ).Distinct(MemComparer.Ordinal);
 
             env.Output.AppendMany(selectors, env.Compress ? ",".AsMemory() : ",\n".AsMemory());
         }

@@ -5,14 +5,15 @@
     using Infrastructure;
     using Infrastructure.Nodes;
     using Plugins;
+    using dotless.Core.Utils;
 
     public class Operation : Node
     {
         public Node First { get; set; }
         public Node Second { get; set; }
-        public string Operator { get; set; }
+        public ReadOnlyMemory<char> Operator { get; set; }
 
-        public Operation(string op, Node first, Node second)
+        public Operation(ReadOnlyMemory<char> op, Node first, Node second)
         {
             First = first;
             Second = second;
@@ -30,7 +31,7 @@
 
             if (a is Number && b is Color)
             {
-                if (Operator == "*" || Operator == "+")
+                if (Operator.Span[0] == '*' || Operator.Span[0] == '+')
                 {
                     var temp = b;
                     b = a;
@@ -58,20 +59,20 @@
             }
         }
 
-        public static double Operate(string op, double first, double second)
+        public static double Operate(ReadOnlyMemory<char> op, double first, double second)
         {
-            if(op == "/" && second == 0)
+            if(op.Span[0] == '/' && second == 0)
                 throw new DivideByZeroException();
 
-            switch (op)
+            switch (op.Span[0])
             {
-                case "+":
+                case '+':
                     return first + second;
-                case "-":
+                case '-':
                     return first - second;
-                case "*":
+                case '*':
                     return first * second;
-                case "/":
+                case '/':
                     return first / second;
                 default:
                     throw new InvalidOperationException("Unknown operator");

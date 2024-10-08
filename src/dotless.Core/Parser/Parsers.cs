@@ -247,13 +247,13 @@ namespace dotless.Core.Parser
             var memo = Remember(parser);
             var index = parser.Tokenizer.Location.Index;
 
-            var callName = string.Empty;
+            var callName = ReadOnlyMemory<char>.Empty;
             RegexMatchResult matchResult = null;
 
             if (parser.Tokenizer.PeekChar() == '%' && parser.Tokenizer.PeekChar(1) == '(')
             {
-                callName = "%";
-                parser.Tokenizer.Advance(2);
+                callName = parser.Tokenizer.Match('%').Value;
+                parser.Tokenizer.Advance(1); //advance once more for the parenthesis
             }
             else
             {
@@ -264,9 +264,9 @@ namespace dotless.Core.Parser
                 if(keyword && parser.Tokenizer.PeekChar() == '(')
                 {
                     parser.Tokenizer.Advance(1); //move past the (
-                    callName = keyword.Value.ToString();
+                    callName = keyword.Value;
 
-                    if (callName.Equals("alpha", StringComparison.OrdinalIgnoreCase))
+                    if (callName.Span.Equals("alpha".AsSpan(), StringComparison.OrdinalIgnoreCase))
                     {
                         var alpha = Alpha(parser);
                         if (alpha != null)
@@ -282,7 +282,7 @@ namespace dotless.Core.Parser
                     if (!name)
                         return null;
 
-                    callName = name[1];
+                    callName = name[1].AsMemory();
                 }
             }
 
@@ -714,7 +714,7 @@ namespace dotless.Core.Parser
 
             GatherComments(parser);
 
-            if (!string.IsNullOrEmpty(Important(parser)))
+            if (!Important(parser).IsEmpty)
             {
                 important = true;
             }
@@ -1100,7 +1100,7 @@ namespace dotless.Core.Parser
             var index = parser.Tokenizer.Location.Index;
 
             Node match;
-            if (match = parser.Tokenizer.Match(@"[+>~]"))
+            if (match = parser.Tokenizer.Match('+','>','~'))
                 return NodeProvider.Combinator(match.ToString(), parser.Tokenizer.GetNodeLocation(index));
 
             return NodeProvider.Combinator(char.IsWhiteSpace(parser.Tokenizer.GetPreviousCharIgnoringComments()) ? " " : null, parser.Tokenizer.GetNodeLocation(index));
@@ -1841,12 +1841,12 @@ namespace dotless.Core.Parser
                 {
                     IESlash9Hack(parser),
                     Important(parser)
-                }.Where(x => x != "").ToArray()
+                }.Where(x => !x.IsEmpty).ToArray()
             );
 
             if (expressions.Count > 0 || parser.Tokenizer.Peek(';'))
             {
-                var value = NodeProvider.Value(expressions, important, parser.Tokenizer.GetNodeLocation(index));
+                var value = NodeProvider.Value(expressions, important.AsMemory(), parser.Tokenizer.GetNodeLocation(index));
 
                 if (!string.IsNullOrEmpty(important))
                 {
@@ -1859,17 +1859,17 @@ namespace dotless.Core.Parser
             return null;
         }
 
-        public string Important(Parser parser)
+        public ReadOnlyMemory<char> Important(Parser parser)
         {
             var important = parser.Tokenizer.Match(@"!\s*important");
 
-            return important == null ? "" : important.Value.ToString();
+            return important == null ? ReadOnlyMemory<char>.Empty : important.Value;
         }
 
-        public string IESlash9Hack(Parser parser)
+        public ReadOnlyMemory<char> IESlash9Hack(Parser parser)
         {
             var slashNine = parser.Tokenizer.MatchExact("\\9");
-            return slashNine == null ? "" : slashNine.Value.ToString();
+            return slashNine == null ? ReadOnlyMemory<char>.Empty : slashNine.Value;
         }
 
         public Expression Sub(Parser parser)
@@ -1909,7 +1909,7 @@ namespace dotless.Core.Parser
 
                 Node a = null;
                 if (op && (a = Operand(parser)))
-                    operation = NodeProvider.Operation(op.Value.ToString(), operation, a, parser.Tokenizer.GetNodeLocation(index));
+                    operation = NodeProvider.Operation(op.Value, operation, a, parser.Tokenizer.GetNodeLocation(index));
                 else
                     break;
             }
@@ -1950,13 +1950,14 @@ namespace dotless.Core.Parser
                     GatherComments(parser);
 
                     var index = parser.Tokenizer.Location.Index;
-                    var op = parser.Tokenizer.Match(@"[-+]\s+");
+
+                    TextNode op = parser.Tokenizer.MatchWithFollowingWhitespace('-', '+');
                     if (!op && !char.IsWhiteSpace(parser.Tokenizer.GetPreviousCharIgnoringComments()))
-                        op = parser.Tokenizer.Match(@"[-+]");
+                        op = parser.Tokenizer.Match('-', '+');
 
                     Node a = null;
                     if (op && (a = Multiplication(parser)))
-                        operation = NodeProvider.Operation(op.Value.ToString(), operation ?? m, a,
+                        operation = NodeProvider.Operation(op.Value, operation ?? m, a,
                             parser.Tokenizer.GetNodeLocation(index));
                     else
                         break;
@@ -1998,7 +1999,7 @@ namespace dotless.Core.Parser
             if (operand != null)
             {
                 return negate ?
-                    NodeProvider.Operation("*", NodeProvider.Number("-1", "", negate.Location), operand, negate.Location) :
+                    NodeProvider.Operation("*".AsMemory(), NodeProvider.Number("-1", "", negate.Location), operand, negate.Location) :
                     operand;
             }
 

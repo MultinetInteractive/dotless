@@ -15,7 +15,7 @@ namespace dotless.Core.Parser.Infrastructure
 
     public class Env
     {
-        private Dictionary<string, Type> _functionTypes;
+        private Dictionary<ReadOnlyMemory<char>, Type> _functionTypes;
         private readonly List<IPlugin> _plugins;
         private readonly List<Extender> _extensions;
 
@@ -43,11 +43,11 @@ namespace dotless.Core.Parser.Infrastructure
         {
         }
 
-        protected Env(Parser parser, Stack<Ruleset> frames, Dictionary<string, Type> functions) : this(frames, functions) {
+        protected Env(Parser parser, Stack<Ruleset> frames, Dictionary<ReadOnlyMemory<char>, Type> functions) : this(frames, functions) {
             Parser = parser;
         }
 
-        protected Env(Stack<Ruleset> frames, Dictionary<string, Type> functions) {
+        protected Env(Stack<Ruleset> frames, Dictionary<ReadOnlyMemory<char>, Type> functions) {
             Frames = frames ?? new Stack<Ruleset>();
             Output = new Output(this);
             MediaPath = new Stack<Media>();
@@ -55,7 +55,7 @@ namespace dotless.Core.Parser.Infrastructure
             Logger = new NullLogger(LogLevel.Info);
 
             _plugins = new List<IPlugin>();
-            _functionTypes = functions ?? new Dictionary<string, Type>();
+            _functionTypes = functions ?? new Dictionary<ReadOnlyMemory<char>, Type>(MemComparer.OrdinalIgnoreCase);
             _extensions = new List<Extender>();
             ExtendMediaScope = new Stack<Media>();
 
@@ -135,7 +135,7 @@ namespace dotless.Core.Parser.Infrastructure
             {
                 foreach(KeyValuePair<string, Type> function in functionPlugin.GetFunctions())
                 {
-                    string functionName = function.Key.ToLowerInvariant();
+                    var functionName = function.Key.AsMemory();
 
                     if (_functionTypes.ContainsKey(functionName))
                     {
@@ -274,9 +274,9 @@ namespace dotless.Core.Parser.Infrastructure
         /// <summary>
         ///  Adds a Function to this Env object
         /// </summary>
-        public void AddFunction(string name, Type type)
+        public void AddFunction(ReadOnlyMemory<char> name, Type type)
         {
-            if (name == null) throw new ArgumentNullException("name");
+            if (name.IsEmpty) throw new ArgumentNullException("name");
             if (type == null) throw new ArgumentNullException("type");
 
             _functionTypes[name] = type;
@@ -294,13 +294,13 @@ namespace dotless.Core.Parser.Infrastructure
             AddFunctionsToRegistry(functions);
         }
 
-        private void AddFunctionsToRegistry(IEnumerable<KeyValuePair<string, Type>> functions) {
+        private void AddFunctionsToRegistry(IEnumerable<KeyValuePair<ReadOnlyMemory<char>, Type>> functions) {
             foreach (var func in functions) {
                 AddFunction(func.Key, func.Value);
             }
         }
 
-        private static Dictionary<string, Type> GetFunctionsFromAssembly(Assembly assembly) {
+        private static Dictionary<ReadOnlyMemory<char>, Type> GetFunctionsFromAssembly(Assembly assembly) {
             var functionType = typeof (Function);
 
             return assembly
@@ -308,28 +308,27 @@ namespace dotless.Core.Parser.Infrastructure
                 .Where(t => functionType.IsAssignableFrom(t) && t != functionType)
                 .Where(t => !t.IsAbstract)
                 .SelectMany(GetFunctionNames)
-                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                .ToDictionary(kvp => kvp.Key.AsMemory(), kvp => kvp.Value);
         }
 
-        private static Dictionary<string, Type> GetCoreFunctions() {
+        private static Dictionary<ReadOnlyMemory<char>, Type> GetCoreFunctions() {
             var functions = GetFunctionsFromAssembly(Assembly.GetExecutingAssembly());
-            functions["%"] = typeof (CFormatString);
+            functions["%".AsMemory()] = typeof (CFormatString);
             return functions;
         }
 
-        private static readonly Dictionary<string, Type> CoreFunctions = GetCoreFunctions();
+        private static readonly Dictionary<ReadOnlyMemory<char>, Type> CoreFunctions = GetCoreFunctions();
 
         private void AddCoreFunctions() {
-            _functionTypes = new Dictionary<string, Type>(CoreFunctions);
+            _functionTypes = new Dictionary<ReadOnlyMemory<char>, Type>(CoreFunctions, MemComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
         ///  Given a function name, returns a new Function matching that name.
         /// </summary>
-        public virtual Function GetFunction(string name)
+        public virtual Function GetFunction(ReadOnlyMemory<char> name)
         {
             Function function = null;
-            name = name.ToLowerInvariant();
 
             if (_functionTypes.ContainsKey(name))
             {

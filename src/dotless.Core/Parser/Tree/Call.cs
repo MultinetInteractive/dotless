@@ -10,10 +10,10 @@ namespace dotless.Core.Parser.Tree
 
     public class Call : Node
     {
-        public string Name { get; set; }
+        public ReadOnlyMemory<char> Name { get; set; }
         public NodeList<Node> Arguments { get; set; }
 
-        public Call(string name, NodeList<Node> arguments)
+        public Call(ReadOnlyMemory<char> name, NodeList<Node> arguments)
         {
             Name = name;
             Arguments = arguments;
@@ -40,7 +40,7 @@ namespace dotless.Core.Parser.Tree
 
             if (function != null)
             {
-                function.Name = Name;
+                function.Name = Name.ToString();
                 function.Location = Location;
                 return function.Call(env, args).ReducedFrom<Node>(this);
             }

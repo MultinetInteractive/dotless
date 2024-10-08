@@ -36,7 +36,7 @@ namespace dotless.Core.Parser.Tree
         public override Node Evaluate(Env env)
         {
             var leftCall = Left as Call;
-            if (leftCall != null && leftCall.Name == "default") {
+            if (leftCall != null && leftCall.Name.Span.SequenceEqual("default".AsSpan())) {
                 IsDefault = true;
             }
 

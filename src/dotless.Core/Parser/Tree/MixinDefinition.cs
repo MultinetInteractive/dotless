@@ -37,7 +37,7 @@
 
         public Ruleset EvaluateParams(Env env, List<NamedArgument> args)
         {
-            var arguments = new Dictionary<ReadOnlyMemory<char>, Node>(MemComparer.Default);
+            var arguments = new Dictionary<ReadOnlyMemory<char>, Node>(MemComparer.Ordinal);
             args = args ?? new List<NamedArgument>();
 
             var hasNamedArgs = false;

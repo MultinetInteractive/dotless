@@ -12,14 +12,14 @@
         public NodeList Values { get; set; }
         public NodeList PreImportantComments { get; set; }
         public string Merge { get; set; }
-        public string Important { get; set; }
+        public ReadOnlyMemory<char> Important { get; set; }
 
         public void AppendValues(IEnumerable<Node> values)
         {
             Values.AddRange(values);
         }
 
-        public Value(IEnumerable<Node> values, string important, string merge = ", ")
+        public Value(IEnumerable<Node> values, ReadOnlyMemory<char> important, string merge = ", ")
         {
             Values = new NodeList(values);
             Important = important;
@@ -37,7 +37,7 @@
                 separator = separator.Slice(0, 1);
             env.Output.AppendMany(Values, separator);
  
-            if  (!string.IsNullOrEmpty(Important)) 
+            if  (!Important.IsEmpty) 
             {
                 if (PreImportantComments)
                 {
@@ -60,7 +60,7 @@
             Node returnNode = null;
             Value value;
 
-            if (Values.Count == 1 && string.IsNullOrEmpty(Important))
+            if (Values.Count == 1 && Important.IsEmpty)
                 returnNode = Values[0].Evaluate(env);
             else
             {

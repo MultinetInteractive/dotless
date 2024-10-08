@@ -46,7 +46,7 @@ namespace dotless.Core.Parser.Tree
 
         protected Ruleset()
         {
-            _lookups = new Dictionary<ReadOnlyMemory<char>, List<Closure>>(MemComparer.Default);
+            _lookups = new Dictionary<ReadOnlyMemory<char>, List<Closure>>(MemComparer.Ordinal);
             OriginalRuleset = this;
         }
 
@@ -309,7 +309,7 @@ namespace dotless.Core.Parser.Tree
                 var rule = @group[0];
                 var value = rule.Value as Value;
                 if (value == null)
-                    value = (Value) (rule.Value = new Value(new[] {rule.Value}, "", rule.Merge));
+                    value = (Value) (rule.Value = new Value(new[] {rule.Value}, ReadOnlyMemory<char>.Empty, rule.Merge));
                 foreach (var extra in @group.Skip(1))
                 {
                     value.AppendValues(new[] {extra.Value});

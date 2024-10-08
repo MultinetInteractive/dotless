@@ -90,7 +90,7 @@
                 // less.js treats division as a special case: if it's the only operation,
                 // units are kept. However, if the result is then operated on again, and 
                 // the second operand has a unit, it gets the unit from that operand.
-                preferUnitFromSecondOperand = unit == otherUnit && op.Operator == "/"
+                preferUnitFromSecondOperand = unit == otherUnit && op.Operator.Span[0] == '/'
             }.ReducedFrom<Node>(this, other);
         }
 

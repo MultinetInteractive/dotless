@@ -6,6 +6,7 @@ namespace dotless.Core.Parser
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
     using System.Text;
     using System.Text.RegularExpressions;
     using Exceptions;
@@ -239,24 +240,83 @@ namespace dotless.Core.Parser
         // Parse from a token, regexp or string, and move forward if match
         //
 
-        public CharMatchResult Match(char tok)
+        public CharMatchResult Match(params char[] chars)
         {
-            if  (_i == _inputLength || _chunks[_j].Type != ChunkType.Text) {
+            if (_i == _inputLength || _chunks[_j].Type != ChunkType.Text)
+            {
                 return null;
             }
 
-            if (_input.Span[_i] == tok)
+            if (chars.Contains(_input.Span[_i]))
             {
                 var index = _i;
 
                 Advance(1);
 
-                return new CharMatchResult(tok) { Location = GetNodeLocation(index) };
+                return new CharMatchResult(_input.Slice(index, 1)) { Location = GetNodeLocation(index) };
             }
 
             return null;
         }
 
+        public CharMatchResult MatchWithFollowingWhitespace(params char[] chars)
+        {
+            if (_i == _inputLength || _chunks[_j].Type != ChunkType.Text)
+            {
+                return null;
+            }
+
+            var startingPosition = _i - _current;
+
+            int x = 0;
+
+            if (startingPosition + 1 > _chunks[_j].Value.Length)
+                return null;
+
+            CharMatchResult result = null;
+
+            if (chars.Contains(_chunks[_j].Value.Span[startingPosition + x]))
+            {
+                x++;
+                result = new CharMatchResult(_chunks[_j].Value.Slice(startingPosition, 1)) { Location = GetNodeLocation(startingPosition) };
+            }
+
+            if(result)
+            {
+                var foundWhitespace = false;
+                while(_chunks[_j].Value.Length > startingPosition + x && char.IsWhiteSpace(_chunks[_j].Value.Span[startingPosition + x]))
+                {
+                    x++;
+
+                    foundWhitespace = true;
+                }
+
+                if (foundWhitespace)
+                {
+                    Advance(x);
+                    return result;
+                }
+            }
+
+            return null;
+        }
+
+        public bool ConsumeWhitespace()
+        {
+            if (_i == _inputLength || _chunks[_j].Type != ChunkType.Text)
+            {
+                return false;
+            }
+
+            var retVal = false;
+            while (_i < _inputLength && char.IsWhiteSpace(_input.Span[_i]))
+            {
+                Advance(1);
+                retVal = true;
+            }
+
+            return retVal;
+        }
 
         public RegexMatchResult Match(string tok)
         {

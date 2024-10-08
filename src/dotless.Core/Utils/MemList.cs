@@ -75,9 +75,16 @@ namespace dotless.Core.Utils
 
     public class MemComparer : IEqualityComparer<ReadOnlyMemory<char>>
     {
+        private StringComparison _comparison;
+
+        public MemComparer(StringComparison comparison)
+        {
+            _comparison = comparison;
+        }
+
         public bool Equals(ReadOnlyMemory<char> x, ReadOnlyMemory<char> y)
         {
-            return x.Span.SequenceEqual(y.Span);
+            return x.Span.Equals(y.Span, _comparison);
         }
 
         public int GetHashCode(ReadOnlyMemory<char> obj)
@@ -85,7 +92,8 @@ namespace dotless.Core.Utils
             return base.GetHashCode();
         }
 
-        public static MemComparer Default = new MemComparer();
+        public static MemComparer Ordinal = new MemComparer(StringComparison.Ordinal);
+        public static MemComparer OrdinalIgnoreCase = new MemComparer(StringComparison.OrdinalIgnoreCase);
     }
 
 }

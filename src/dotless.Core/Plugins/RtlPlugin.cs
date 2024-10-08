@@ -220,7 +220,7 @@
 
                 // we have the values.. now we can reverse it
                 string content = _textContent.ToString();
-                string important = "";
+                var important = ReadOnlyMemory<char>.Empty;
 
                 var value = rule.Value as Value;
                 if (value != null)

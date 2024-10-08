@@ -191,8 +191,8 @@
             var valueNode = rule.Value;
             var value = valueNode as Value;
             value = value != null
-                        ? new Value(value.Values, "!important").ReducedFrom<Value>(value)
-                        : new Value(new NodeList {valueNode}, "!important");
+                        ? new Value(value.Values, "!important".AsMemory()).ReducedFrom<Value>(value)
+                        : new Value(new NodeList {valueNode}, "!important".AsMemory());
 
             var importantRule = new Rule(rule.Name, value).ReducedFrom<Rule>(rule);
             return importantRule;

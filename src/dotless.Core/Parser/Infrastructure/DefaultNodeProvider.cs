@@ -48,7 +48,7 @@
             return new Alpha(value) { Location = location };
         }
 
-        public Call Call(string name, NodeList<Node> arguments, NodeLocation location)
+        public Call Call(ReadOnlyMemory<char> name, NodeList<Node> arguments, NodeLocation location)
         {
             return new Call(name, arguments) { Location = location };
         }
@@ -150,12 +150,12 @@
             return new Expression(expression) { Location = location };
         }
 
-        public Value Value(IEnumerable<Node> values, string important, NodeLocation location)
+        public Value Value(IEnumerable<Node> values, ReadOnlyMemory<char> important, NodeLocation location)
         {
             return new Value(values, important) { Location = location };
         }
 
-        public Operation Operation(string operation, Node left, Node right, NodeLocation location)
+        public Operation Operation(ReadOnlyMemory<char> operation, Node left, Node right, NodeLocation location)
         {
             return new Operation(operation, left, right) { Location = location };
         }

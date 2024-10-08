@@ -19,7 +19,7 @@
 
         //entities
         Alpha Alpha(Node value, NodeLocation location);
-        Call Call(string name, NodeList<Node> arguments, NodeLocation location);
+        Call Call(ReadOnlyMemory<char> name, NodeList<Node> arguments, NodeLocation location);
         Color Color(string rgb, NodeLocation location);
         Keyword Keyword(string value, NodeLocation location);
         Keyword Keyword(ReadOnlyMemory<char> value, NodeLocation location);
@@ -51,8 +51,8 @@
  #if CSS3EXPERIMENTAL
         RepeatEntity RepeatEntity(Node value, Node repeatCount, int index);
 #endif
-        Value Value(IEnumerable<Node> values, string important, NodeLocation location);
-        Operation Operation(string operation, Node left, Node right, NodeLocation location);
+        Value Value(IEnumerable<Node> values, ReadOnlyMemory<char> important, NodeLocation location);
+        Operation Operation(ReadOnlyMemory<char> operation, Node left, Node right, NodeLocation location);
         Assignment Assignment(string key, Node value, NodeLocation location);
 
         //text
