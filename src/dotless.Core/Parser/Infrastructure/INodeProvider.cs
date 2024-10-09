@@ -36,7 +36,7 @@
         //mixins
         MixinCall MixinCall(NodeList<Element> elements, List<NamedArgument> arguments, bool important, NodeLocation location);
         MixinDefinition MixinDefinition(string name, NodeList<Rule> parameters, NodeList rules, Condition condition, bool variadic, NodeLocation location);
-        Condition Condition(Node left, string operation, Node right, bool negate, NodeLocation location);
+        Condition Condition(Node left, ReadOnlyMemory<char> operation, Node right, bool negate, NodeLocation location);
 
         //directives
         Import Import(Url path, Value features, ImportOptions option, NodeLocation location);

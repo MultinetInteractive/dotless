@@ -195,7 +195,7 @@
             return new Paren(value) { Location = location };
         }
 
-        public Condition Condition(Node left, string operation, Node right, bool negate, NodeLocation location)
+        public Condition Condition(Node left, ReadOnlyMemory<char> operation, Node right, bool negate, NodeLocation location)
         {
             return new Condition(left, operation, right, negate) { Location = location };
         }

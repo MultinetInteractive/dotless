@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using dotless.Core.Utils;
 
 namespace dotless.Core.Parser.Tree
 {
@@ -12,12 +13,12 @@ namespace dotless.Core.Parser.Tree
     {
         public Node Left { get; set; }
         public Node Right { get; set; }
-        public string Operation { get; set; }
+        public ReadOnlyMemory<char> Operation { get; set; }
         public bool Negate { get; set; }
 
         public bool IsDefault { get; private set; }
 
-        public Condition(Node left, string operation, Node right, bool negate)
+        public Condition(Node left, ReadOnlyMemory<char> operation, Node right, bool negate)
         {
             Left = left;
             Right = right;
@@ -53,9 +54,9 @@ namespace dotless.Core.Parser.Tree
             return new BooleanNode(value);
         }
 
-        private bool Evaluate(Node lValue, string operation, Node rValue)
+        private bool Evaluate(Node lValue, ReadOnlyMemory<char> operation, Node rValue)
         {
-            switch (operation)
+            switch (operation.ToString())
             {
                 case "or":
                     return ToBool(lValue) || ToBool(rValue);
@@ -93,15 +94,15 @@ namespace dotless.Core.Parser.Tree
 
                     if (result == 0)
                     {
-                        return operation == "=" || operation == ">=" || operation == "=<";
+                        return operation.Span.SequenceEqual("=".AsSpan()) || operation.Span.SequenceEqual(">=".AsSpan()) || operation.Span.SequenceEqual("=<".AsSpan());
                     }
                     else if (result < 0)
                     {
-                        return operation == "<" || operation == "=<";
+                        return operation.Span.SequenceEqual("<".AsSpan()) || operation.Span.SequenceEqual("=<".AsSpan());
                     }
                     else if (result > 0)
                     {
-                        return operation == ">" || operation == ">=";
+                        return operation.Span.SequenceEqual(">".AsSpan()) || operation.Span.SequenceEqual(">=".AsSpan());
                     }
                     break;
             }

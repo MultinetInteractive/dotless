@@ -810,7 +810,7 @@ namespace dotless.Core.Parser
             while (true)
             {
                 i = parser.Tokenizer.Location.Index;
-                if (parser.Tokenizer.CurrentChar == '.' && parser.Tokenizer.Match("\\.{3}"))
+                if (parser.Tokenizer.CurrentChar == '.' && parser.Tokenizer.MatchExact("..."))
                 {
                     variadic = true;
                     break;
@@ -887,7 +887,7 @@ namespace dotless.Core.Parser
                 while(parser.Tokenizer.Match(',')) {
                     nextCondition = Expect(Condition(parser), ", without recognised condition", parser);
 
-                    condition = NodeProvider.Condition(condition, "or", nextCondition, false, parser.Tokenizer.GetNodeLocation());
+                    condition = NodeProvider.Condition(condition, "or".AsMemory(), nextCondition, false, parser.Tokenizer.GetNodeLocation());
                 }
                 return condition;
             }
@@ -915,24 +915,25 @@ namespace dotless.Core.Parser
 
             Node left = Expect(Operation(parser) || Keyword(parser) || Quoted(parser), "unrecognised condition", parser);
 
-            var op = parser.Tokenizer.Match("(>=|=<|[<=>])");
+            var op = parser.Tokenizer.MatchExact(">=") || parser.Tokenizer.MatchExact("=<") || parser.Tokenizer.Match('<','=','>');
 
             if (op)
             {
                 Node right = Expect(Operation(parser) || Keyword(parser) || Quoted(parser), "unrecognised right hand side condition expression", parser);
 
-                condition = NodeProvider.Condition(left, op.Value.ToString(), right, negate, parser.Tokenizer.GetNodeLocation(index));
+                condition = NodeProvider.Condition(left, op.Value, right, negate, parser.Tokenizer.GetNodeLocation(index));
             }
             else
             {
-                condition = NodeProvider.Condition(left, "=", NodeProvider.Keyword("true", parser.Tokenizer.GetNodeLocation(index)), negate, parser.Tokenizer.GetNodeLocation(index));
+                condition = NodeProvider.Condition(left, "=".AsMemory(), NodeProvider.Keyword("true", parser.Tokenizer.GetNodeLocation(index)), negate, parser.Tokenizer.GetNodeLocation(index));
             }
 
             Expect(parser, ')');
 
-            if (parser.Tokenizer.MatchExact("and"))
+            TextNode andOp;
+            if (andOp = parser.Tokenizer.MatchExact("and"))
             {
-                return NodeProvider.Condition(condition, "and", Condition(parser), false, parser.Tokenizer.GetNodeLocation(index));
+                return NodeProvider.Condition(condition, andOp.Value, Condition(parser), false, parser.Tokenizer.GetNodeLocation(index));
             }
 
             return condition;
@@ -1309,7 +1310,7 @@ namespace dotless.Core.Parser
                 // However, the value might still be useful in another context, e.g. as part of a selector
                 // so let's catch the whole shebang:
                 if (variable != null && value == null) {
-                    value = parser.Tokenizer.Match("[^;]*");
+                    value = parser.Tokenizer.MatchUntil(';');
                 }
 
                 var postValueComments = GatherAndPullComments(parser);

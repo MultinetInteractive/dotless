@@ -316,6 +316,36 @@ namespace dotless.Core.Parser
             return Match(tok, false);
         }
 
+        public RegexMatchResult MatchUntil(char c)
+        {
+            if (_i == _inputLength || _chunks[_j].Type != ChunkType.Text)
+            {
+                return null;
+            }
+
+            var startingPosition = _i - _current;
+
+            if (startingPosition + 1 > _chunks[_j].Value.Length)
+                return null;
+
+            var x = 0;
+
+            while(startingPosition + x < _chunks[_j].Value.Length && _chunks[_j].Value.Span[startingPosition + x] != c)
+            {
+                x++;
+            }
+
+            if(x > 0)
+            {
+                var res = new RegexMatchResult(_chunks[_j].Value.Slice(startingPosition, x), GetNodeLocation(startingPosition));
+                Advance(x);
+
+                return res;
+            }
+            return null;
+
+        }
+
         public RegexMatchResult MatchExact(string tok)
         {
             if (_i == _inputLength || _chunks[_j].Type != ChunkType.Text)
