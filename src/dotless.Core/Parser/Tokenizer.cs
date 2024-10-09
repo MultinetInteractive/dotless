@@ -229,13 +229,6 @@ namespace dotless.Core.Parser
             return null;
         }
 
-        public string MatchString(char tok)
-        {
-            var c = Match(tok);
-
-            return c == null ? null : c.Value.ToString();
-        }
-
         //
         // Parse from a token, regexp or string, and move forward if match
         //

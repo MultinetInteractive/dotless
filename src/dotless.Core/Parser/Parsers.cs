@@ -281,7 +281,7 @@ namespace dotless.Core.Parser
                     if (!progid || parser.Tokenizer.PeekChar() != '(')
                     {
                         Recall(parser, keywordMemo);
-                        return null;.ToString
+                        return null;
                     }
                     parser.Tokenizer.Advance(1); //move past the (
 
@@ -431,11 +431,24 @@ namespace dotless.Core.Parser
         //
         public Variable VariableCurly(Parser parser)
         {
-            RegexMatchResult name;
             var index = parser.Tokenizer.Location.Index;
 
-            if (parser.Tokenizer.CurrentChar == '@' && (name = parser.Tokenizer.Match(@"@\{([a-zA-Z0-9_-]+)\}")))
-                return NodeProvider.Variable("@" + name.Match.Groups[1].Value, parser.Tokenizer.GetNodeLocation(index));
+            if (parser.Tokenizer.CurrentChar == '@' && parser.Tokenizer.NextChar == '{')
+            {
+                var memo = Remember(parser);
+
+                parser.Tokenizer.Advance(2);
+                var variableName = parser.Tokenizer.MatchKeyword();
+
+                if(!variableName || parser.Tokenizer.CurrentChar != '}')
+                {
+                    Recall(parser, memo);
+                    return null;
+                }
+
+                parser.Tokenizer.Advance(1);
+                return NodeProvider.Variable("@" + variableName.Value.ToString(), parser.Tokenizer.GetNodeLocation(index));
+            }
 
             return null;
         }
