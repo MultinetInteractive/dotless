@@ -600,36 +600,30 @@ namespace dotless.Core.Parser
         // Match a string, but include the possibility of matching quoted and comments
         public RegexMatchResult MatchAny(string tok)
         {
-            if (_i == _inputLength) {
+            if (_i == _inputLength)
+            {
                 return null;
             }
 
             var regex = GetRegex(tok, RegexOptions.None);
-            
-            var match = regex.Match(_input.Slice(_i).ToString());
-            
+
+            var match = regex.Match(_input.ToString(), _i);
+
             if (!match.Success)
                 return null;
 
             Advance(match.Length);
 
-            ConvertCommentIfAbsorbed();
-
-            return new RegexMatchResult(match);
-        }
-
-        public bool ConvertCommentIfAbsorbed()
-        {
             if (_i > _current && _i < _current + _chunks[_j].Value.Length)
             {
                 //If we absorbed the start of an inline comment then turn it into text so the rest can be absorbed
                 if (_chunks[_j].Type == ChunkType.Comment && _chunks[_j].Value.Span.StartsWith("//".AsSpan(), StringComparison.Ordinal))
                 {
                     _chunks[_j].Type = ChunkType.Text;
-                    return true;
                 }
             }
-            return false;
+
+            return new RegexMatchResult(match);
         }
 
         public int Advance(int length)
