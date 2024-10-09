@@ -21,9 +21,8 @@
         Alpha Alpha(Node value, NodeLocation location);
         Call Call(ReadOnlyMemory<char> name, NodeList<Node> arguments, NodeLocation location);
         Color Color(string rgb, NodeLocation location);
-        Keyword Keyword(string value, NodeLocation location);
         Keyword Keyword(ReadOnlyMemory<char> value, NodeLocation location);
-        Number Number(string value, string unit, NodeLocation location);
+        Number Number(ReadOnlyMemory<char> value, ReadOnlyMemory<char> unit, NodeLocation location);
         Shorthand Shorthand(Node first, Node second, NodeLocation location);
         Variable Variable(string name, NodeLocation location);
         Variable Variable(ReadOnlyMemory<char> name, NodeLocation location);

@@ -60,17 +60,12 @@
             return color;
         }
 
-        public Keyword Keyword(string value, NodeLocation location)
-        {
-            return new Keyword(value) { Location = location };
-        }
-
         public Keyword Keyword(ReadOnlyMemory<char> value, NodeLocation location)
         {
             return new Keyword(value) { Location = location };
         }
 
-        public Number Number(string value, string unit, NodeLocation location)
+        public Number Number(ReadOnlyMemory<char> value, ReadOnlyMemory<char> unit, NodeLocation location)
         {
             return new Number(value, unit) { Location = location };
         }

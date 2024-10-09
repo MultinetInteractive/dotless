@@ -1,4 +1,4 @@
-namespace dotless.Core.Utils
+﻿namespace dotless.Core.Utils
 {
     using System;
     using System.Linq;
@@ -135,17 +135,17 @@ namespace dotless.Core.Utils
 
         public Number GetHueInDegrees()
         {
-            return new Number(Hue*360, "deg");
+            return new Number(Hue*360, "deg".AsMemory());
         }
 
         public Number GetSaturation()
         {
-            return new Number(Saturation*100, "%");
+            return new Number(Saturation*100, "%".AsMemory());
         }
 
         public Number GetLightness()
         {
-            return new Number(Lightness*100, "%");
+            return new Number(Lightness*100, "%".AsMemory());
         }
     }
 }

@@ -27,7 +27,7 @@
                 }
             }
 
-            return new Number(number.Value, unit.ToString());
+            return new Number(number.Value, unit);
         }
     }
 }

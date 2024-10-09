@@ -252,6 +252,50 @@ namespace dotless.Core.Parser
             return null;
         }
 
+        public RegexMatchResult MatchNumber(bool allowDecimals, bool allowOperator = true)
+        {
+            if (_i == _inputLength || _chunks[_j].Type != ChunkType.Text)
+            {
+                return null;
+            }
+
+            var startingPosition = _i - _current;
+            var x = 0;
+            var requiredLength = 0;
+
+            char Current(int offset = 0)
+            {
+                return _chunks[_j].Value.Span[startingPosition + x + offset];
+            }
+
+            if (allowOperator && (Current() == '-' || Current() == '+'))
+            {
+                x++;
+                requiredLength++;
+            }
+                
+
+            while (startingPosition + x < _chunks[_j].Value.Length && char.IsDigit(Current()))
+                x++;
+
+            if(allowDecimals && (startingPosition + x + 1 < _chunks[_j].Value.Length) && Current() == '.' && char.IsDigit(Current(1)))
+            {
+                x++;
+                while (startingPosition + x < _chunks[_j].Value.Length && char.IsDigit(Current()))
+                    x++;
+            }
+
+            if (x > requiredLength)
+            {
+                var res = new RegexMatchResult(_chunks[_j].Value.Slice(startingPosition, x), GetNodeLocation(startingPosition));
+                Advance(x);
+
+                return res;
+            }
+
+            return null;
+        }
+
         public CharMatchResult MatchWithFollowingWhitespace(params char[] chars)
         {
             if (_i == _inputLength || _chunks[_j].Type != ChunkType.Text)
@@ -429,41 +473,6 @@ namespace dotless.Core.Parser
             {
                 return null;
             }
-        }
-
-        public RegexMatchResult MatchInt()
-        {
-            if (_i == _inputLength || _chunks[_j].Type != ChunkType.Text)
-            {
-                return null;
-            }
-
-            var startingPosition = _i - _current;
-
-            var x = 0;
-
-            char Current()
-            {
-                return _chunks[_j].Value.Span[startingPosition + x];
-            }
-
-            while (_chunks[_j].Value.Length > (startingPosition + x) && char.IsDigit(Current()))
-            {
-                x++;
-            }
-
-            if(x > 0)
-            {
-                var res = new RegexMatchResult(_chunks[_j].Value.Slice(startingPosition, x), GetNodeLocation(startingPosition));
-                Advance(x);
-
-                return res;
-            }
-            else
-            { 
-                return null; 
-            }
-
         }
 
         public RegexMatchResult MatchIdentifier()

@@ -1,5 +1,6 @@
 ﻿namespace dotless.Core.Parser.Functions
 {
+    using System;
     using Exceptions;
     using Infrastructure;
     using Infrastructure.Nodes;
@@ -9,7 +10,7 @@
     {
         protected override Node Eval(Env env, Number number, Node[] args)
         {
-            return new Number(number.Value * 100, "%");
+            return new Number(number.Value * 100, "%".AsMemory());
         }
     }
 }

@@ -1,4 +1,4 @@
-namespace dotless.Core.Parser.Functions
+﻿namespace dotless.Core.Parser.Functions
 {
     using Exceptions;
     using Infrastructure;
@@ -11,7 +11,7 @@ namespace dotless.Core.Parser.Functions
         {
             WarnNotSupportedByLessJS("hex(number)");
 
-            if (!string.IsNullOrEmpty(number.Unit))
+            if (!number.Unit.IsEmpty)
                 throw new ParsingException(string.Format("Expected unitless number in function 'hex', found {0}", number.ToCSS(env)), number.Location);
 
             number.Value = Clamp(number.Value, 255, 0);

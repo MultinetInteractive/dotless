@@ -9,24 +9,24 @@
     public class Number : Node, IOperable, IComparable
     {
         public double Value { get; set; }
-        public string Unit { get; set; }
+        public ReadOnlyMemory<char> Unit { get; set; }
 
         private bool preferUnitFromSecondOperand;
 
-        public Number(string value, string unit)
+        public Number(ReadOnlyMemory<char> value, ReadOnlyMemory<char> unit)
         {
-            Value = double.Parse(value, CultureInfo.InvariantCulture);
+            Value = double.Parse(value.ToString(), CultureInfo.InvariantCulture);
             Unit = unit;
         }
 
-        public Number(double value, string unit)
+        public Number(double value, ReadOnlyMemory<char> unit)
         {
             Value = value;
             Unit = unit;
         }
 
         public Number(double value)
-            : this(value, "")
+            : this(value, ReadOnlyMemory<char>.Empty)
         {
         }
 
@@ -78,11 +78,11 @@
             var unit = Unit;
             var otherUnit = dim.Unit;
 
-            if (preferUnitFromSecondOperand && !string.IsNullOrEmpty(otherUnit)) {
+            if (preferUnitFromSecondOperand && !otherUnit.IsEmpty) {
                 unit = otherUnit;
-            } else if (string.IsNullOrEmpty(unit)) {
+            } else if (unit.IsEmpty) {
                 unit = otherUnit;
-            } else if (!string.IsNullOrEmpty(otherUnit)) {
+            } else if (!otherUnit.IsEmpty) {
                 // convert units
             }
 
@@ -90,7 +90,7 @@
                 // less.js treats division as a special case: if it's the only operation,
                 // units are kept. However, if the result is then operated on again, and 
                 // the second operand has a unit, it gets the unit from that operand.
-                preferUnitFromSecondOperand = unit == otherUnit && op.Operator.Span[0] == '/'
+                preferUnitFromSecondOperand = unit.Span.SequenceEqual(otherUnit.Span) && op.Operator.Span[0] == '/'
             }.ReducedFrom<Node>(this, other);
         }
 
@@ -106,7 +106,7 @@
 
         public double ToNumber(double max)
         {
-            return Unit == "%" ? Value*max/100d : Value;
+            return Unit.Span.SequenceEqual("%".AsSpan()) ? Value*max/100d : Value;
         }
 
         public static Number operator -(Number n)

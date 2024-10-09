@@ -41,6 +41,7 @@ namespace dotless.Core.Parser
     using System.Collections.Generic;
     using System.Linq;
     using System.Runtime.InteropServices.ComTypes;
+    using dotless.Core.Parser.Functions;
     using Exceptions;
     using Infrastructure;
     using Infrastructure.Nodes;
@@ -590,12 +591,47 @@ namespace dotless.Core.Parser
 
             var index = parser.Tokenizer.Location.Index;
 
-            var value = parser.Tokenizer.Match(@"([+-]?[0-9]*\.?[0-9]+)(px|%|em|pc|ex|in|deg|s|ms|pt|cm|mm|ch|rem|vw|vh|vmin|vm(ax)?|grad|rad|fr|gr|Hz|kHz|dpi|dpcm|dppx)?", true);
+            var number = parser.Tokenizer.MatchNumber(true);
 
-            if (value)
-                return NodeProvider.Number(value[1], value[2], parser.Tokenizer.GetNodeLocation(index));
+            if (!number)
+            {
+                return null;
+            }
 
-            return null;
+            TextNode unit = parser.Tokenizer.Match('%');
+
+            if(!unit && char.IsLetter(parser.Tokenizer.CurrentChar))
+            {
+                unit = parser.Tokenizer.MatchExact("px", StringComparison.OrdinalIgnoreCase) ||
+                parser.Tokenizer.MatchExact("em", StringComparison.OrdinalIgnoreCase) ||
+                parser.Tokenizer.MatchExact("pc", StringComparison.OrdinalIgnoreCase) ||
+                parser.Tokenizer.MatchExact("ex", StringComparison.OrdinalIgnoreCase) ||
+                parser.Tokenizer.MatchExact("in", StringComparison.OrdinalIgnoreCase) ||
+                parser.Tokenizer.MatchExact("deg", StringComparison.OrdinalIgnoreCase) ||
+                parser.Tokenizer.MatchExact("ms", StringComparison.OrdinalIgnoreCase) ||
+                parser.Tokenizer.MatchExact("pt", StringComparison.OrdinalIgnoreCase) ||
+                parser.Tokenizer.MatchExact("cm", StringComparison.OrdinalIgnoreCase) ||
+                parser.Tokenizer.MatchExact("mm", StringComparison.OrdinalIgnoreCase) ||
+                parser.Tokenizer.MatchExact("ch", StringComparison.OrdinalIgnoreCase) ||
+                parser.Tokenizer.MatchExact("rem", StringComparison.OrdinalIgnoreCase) ||
+                parser.Tokenizer.MatchExact("vw", StringComparison.OrdinalIgnoreCase) ||
+                parser.Tokenizer.MatchExact("vh", StringComparison.OrdinalIgnoreCase) ||
+                parser.Tokenizer.MatchExact("vmin", StringComparison.OrdinalIgnoreCase) ||
+                parser.Tokenizer.MatchExact("vmax", StringComparison.OrdinalIgnoreCase) ||
+                parser.Tokenizer.MatchExact("vm", StringComparison.OrdinalIgnoreCase) ||
+                parser.Tokenizer.MatchExact("grad", StringComparison.OrdinalIgnoreCase) ||
+                parser.Tokenizer.MatchExact("rad", StringComparison.OrdinalIgnoreCase) ||
+                parser.Tokenizer.MatchExact("fr", StringComparison.OrdinalIgnoreCase) ||
+                parser.Tokenizer.MatchExact("gr", StringComparison.OrdinalIgnoreCase) ||
+                parser.Tokenizer.MatchExact("Hz", StringComparison.OrdinalIgnoreCase) ||
+                parser.Tokenizer.MatchExact("kHz", StringComparison.OrdinalIgnoreCase) ||
+                parser.Tokenizer.MatchExact("dpi", StringComparison.OrdinalIgnoreCase) ||
+                parser.Tokenizer.MatchExact("dpcm", StringComparison.OrdinalIgnoreCase) ||
+                parser.Tokenizer.MatchExact("dppx", StringComparison.OrdinalIgnoreCase) ||
+                parser.Tokenizer.Match('s', 'S');
+            }
+            
+            return NodeProvider.Number(number.Value, unit?.Value ?? ReadOnlyMemory<char>.Empty, parser.Tokenizer.GetNodeLocation(index)); ;
         }
 
         //
@@ -684,7 +720,28 @@ namespace dotless.Core.Parser
 
             PushComments();
 
-            for (var i = parser.Tokenizer.Location.Index; e = parser.Tokenizer.Match(@"[#.][a-zA-Z0-9_-]+"); i = parser.Tokenizer.Location.Index)
+            RegexMatchResult MatchName()
+            {
+                var memo = Remember(parser);
+                var length = 0;
+                if (parser.Tokenizer.Match('#', '.'))
+                    length++;
+
+                var name = parser.Tokenizer.MatchKeyword();
+                Recall(parser, memo);
+                
+                if (!name)
+                {
+                    return null;
+                }
+                
+                length += name.Value.Length;
+
+                return parser.Tokenizer.ConsumeRange(length);
+
+            }
+
+            for (var i = parser.Tokenizer.Location.Index; e = MatchName(); i = parser.Tokenizer.Location.Index)
             {
                 elements.Add(NodeProvider.Element(c, e, parser.Tokenizer.GetNodeLocation(index)));
 
@@ -925,7 +982,7 @@ namespace dotless.Core.Parser
             }
             else
             {
-                condition = NodeProvider.Condition(left, "=".AsMemory(), NodeProvider.Keyword("true", parser.Tokenizer.GetNodeLocation(index)), negate, parser.Tokenizer.GetNodeLocation(index));
+                condition = NodeProvider.Condition(left, "=".AsMemory(), NodeProvider.Keyword("true".AsMemory(), parser.Tokenizer.GetNodeLocation(index)), negate, parser.Tokenizer.GetNodeLocation(index));
             }
 
             Expect(parser, ')');
@@ -1032,7 +1089,7 @@ namespace dotless.Core.Parser
             if (char.ToLower(parser.Tokenizer.CurrentChar) != 'o' || !MatchOpacity())
                 return null;
 
-            if (value = parser.Tokenizer.MatchInt() || Variable(parser))
+            if (value = parser.Tokenizer.MatchNumber(allowDecimals: false, allowOperator: false) || Variable(parser))
             {
                 Expect(parser, ')');
 
@@ -2064,7 +2121,7 @@ namespace dotless.Core.Parser
             if (operand != null)
             {
                 return negate ?
-                    NodeProvider.Operation("*".AsMemory(), NodeProvider.Number("-1", "", negate.Location), operand, negate.Location) :
+                    NodeProvider.Operation("*".AsMemory(), NodeProvider.Number("-1".AsMemory(), ReadOnlyMemory<char>.Empty, negate.Location), operand, negate.Location) :
                     operand;
             }
 

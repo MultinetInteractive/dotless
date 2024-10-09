@@ -57,7 +57,7 @@
             bool isNumber = base.IsEvaluator(node);
             if (isNumber)
             {
-                if (((Number)node).Unit == Unit)
+                if (((Number)node).Unit.Span.SequenceEqual(Unit.AsSpan()))
                 {
                     return true;
                 }

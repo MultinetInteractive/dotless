@@ -1,4 +1,4 @@
-namespace dotless.Core.Parser.Functions
+﻿namespace dotless.Core.Parser.Functions
 {
     using Infrastructure;
     using Infrastructure.Nodes;
@@ -11,7 +11,7 @@ namespace dotless.Core.Parser.Functions
         {
             Guard.ExpectNumArguments(3, Arguments.Count, this, Location);
 
-            Arguments.Add(new Number(1d, ""));
+            Arguments.Add(new Number(1d, System.ReadOnlyMemory<char>.Empty));
 
             return base.Evaluate(env);
         }
