@@ -21,7 +21,7 @@ namespace dotless.Core.Parser.Tree
 
         public bool Important
         {
-            get { return Value is Value && ((Value) Value).Important.Span.SequenceEqual("!important".AsSpan()); }
+            get { return Value is Value && ((Value)Value).Important.Span.Equals("!important".AsSpan(), StringComparison.Ordinal); }
         }
         public bool InterpolatedName { get; set; }
 

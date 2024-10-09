@@ -169,7 +169,7 @@
             {
                 if (Params[i].Name.Span.IsEmpty)
                 {
-                    if (!arguments[i].Value.Evaluate(env).ToCSS(env).Span.SequenceEqual(Params[i].Value.Evaluate(env).ToCSS(env).Span))
+                    if (!arguments[i].Value.Evaluate(env).ToCSS(env).Span.Equals(Params[i].Value.Evaluate(env).ToCSS(env).Span, StringComparison.Ordinal))
                     {
                         return MixinMatch.ArgumentMismatch;
                     }

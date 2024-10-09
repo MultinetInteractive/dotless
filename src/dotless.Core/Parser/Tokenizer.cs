@@ -379,26 +379,26 @@ namespace dotless.Core.Parser
 
         public RegexMatchResult MatchUntil(char c)
         {
-            if (_i == _inputLength || _chunks[_j].Type != ChunkType.Text)
+            if (_i == _input.Length)
             {
                 return null;
             }
 
-            var startingPosition = _i - _current;
+            var startingPosition = _i;
 
-            if (startingPosition + 1 > _chunks[_j].Value.Length)
+            if (startingPosition > _input.Length)
                 return null;
 
             var x = 0;
 
-            while(startingPosition + x < _chunks[_j].Value.Length && _chunks[_j].Value.Span[startingPosition + x] != c)
+            while(startingPosition + x < _input.Length && _input.Span[startingPosition + x] != c)
             {
                 x++;
             }
 
             if(x > 0)
             {
-                var res = new RegexMatchResult(_chunks[_j].Value.Slice(startingPosition, x), GetNodeLocation(startingPosition));
+                var res = new RegexMatchResult(_input.Slice(startingPosition, x), GetNodeLocation(startingPosition));
                 Advance(x);
 
                 return res;
@@ -446,7 +446,7 @@ namespace dotless.Core.Parser
             if (startingPosition + 8 > _chunks[_j].Value.Length)
                 return null;
 
-            if (!_chunks[_j].Value.Slice(startingPosition, 7).Span.SequenceEqual("progid:".AsSpan()))
+            if (!_chunks[_j].Value.Slice(startingPosition, 7).Span.Equals("progid:".AsSpan(), StringComparison.Ordinal))
                 return null;
 
             var x = 7;
@@ -606,23 +606,30 @@ namespace dotless.Core.Parser
 
             var regex = GetRegex(tok, RegexOptions.None);
             
-            var match = regex.Match(_input.ToString(), _i);
+            var match = regex.Match(_input.Slice(_i).ToString());
             
             if (!match.Success)
                 return null;
 
             Advance(match.Length);
 
+            ConvertCommentIfAbsorbed();
+
+            return new RegexMatchResult(match);
+        }
+
+        public bool ConvertCommentIfAbsorbed()
+        {
             if (_i > _current && _i < _current + _chunks[_j].Value.Length)
             {
                 //If we absorbed the start of an inline comment then turn it into text so the rest can be absorbed
                 if (_chunks[_j].Type == ChunkType.Comment && _chunks[_j].Value.Span.StartsWith("//".AsSpan(), StringComparison.Ordinal))
                 {
                     _chunks[_j].Type = ChunkType.Text;
+                    return true;
                 }
             }
-
-            return new RegexMatchResult(match);
+            return false;
         }
 
         public int Advance(int length)

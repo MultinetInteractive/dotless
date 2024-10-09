@@ -17,7 +17,7 @@
 
             var value = number.Value;
 
-            if (number.Unit.Span.SequenceEqual("%".AsSpan()))
+            if (number.Unit.Span.Equals("%".AsSpan(), StringComparison.Ordinal))
                 value = (value*255)/100d;
 
             return new Color(color.R, color.G + value, color.B);

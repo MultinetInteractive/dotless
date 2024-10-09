@@ -37,7 +37,7 @@ namespace dotless.Core.Parser.Tree
         public override Node Evaluate(Env env)
         {
             var leftCall = Left as Call;
-            if (leftCall != null && leftCall.Name.Span.SequenceEqual("default".AsSpan())) {
+            if (leftCall != null && leftCall.Name.Span.Equals("default".AsSpan(), StringComparison.Ordinal)) {
                 IsDefault = true;
             }
 
@@ -94,15 +94,15 @@ namespace dotless.Core.Parser.Tree
 
                     if (result == 0)
                     {
-                        return operation.Span.SequenceEqual("=".AsSpan()) || operation.Span.SequenceEqual(">=".AsSpan()) || operation.Span.SequenceEqual("=<".AsSpan());
+                        return operation.Span.Equals("=".AsSpan(), StringComparison.Ordinal) || operation.Span.Equals(">=".AsSpan(), StringComparison.Ordinal) || operation.Span.Equals("=<".AsSpan(), StringComparison.Ordinal);
                     }
                     else if (result < 0)
                     {
-                        return operation.Span.SequenceEqual("<".AsSpan()) || operation.Span.SequenceEqual("=<".AsSpan());
+                        return operation.Span.Equals("<".AsSpan(), StringComparison.Ordinal) || operation.Span.Equals("=<".AsSpan(), StringComparison.Ordinal);
                     }
                     else if (result > 0)
                     {
-                        return operation.Span.SequenceEqual(">".AsSpan()) || operation.Span.SequenceEqual(">=".AsSpan());
+                        return operation.Span.Equals(">".AsSpan(), StringComparison.Ordinal) || operation.Span.Equals(">=".AsSpan(), StringComparison.Ordinal);
                     }
                     break;
             }

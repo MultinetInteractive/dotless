@@ -90,7 +90,7 @@
                 // less.js treats division as a special case: if it's the only operation,
                 // units are kept. However, if the result is then operated on again, and 
                 // the second operand has a unit, it gets the unit from that operand.
-                preferUnitFromSecondOperand = unit.Span.SequenceEqual(otherUnit.Span) && op.Operator.Span[0] == '/'
+                preferUnitFromSecondOperand = unit.Span.Equals(otherUnit.Span, StringComparison.Ordinal) && op.Operator.Span[0] == '/'
             }.ReducedFrom<Node>(this, other);
         }
 
@@ -106,7 +106,7 @@
 
         public double ToNumber(double max)
         {
-            return Unit.Span.SequenceEqual("%".AsSpan()) ? Value*max/100d : Value;
+            return Unit.Span.Equals("%".AsSpan(), StringComparison.Ordinal) ? Value*max/100d : Value;
         }
 
         public static Number operator -(Number n)

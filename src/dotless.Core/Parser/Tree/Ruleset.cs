@@ -69,7 +69,7 @@ namespace dotless.Core.Parser.Tree
                 if (r == startNode || (startNodeRuleset != null && (r is Ruleset rs && startNodeRuleset.IsEqualOrClonedFrom(rs))))
                     break;
 
-                if (r is Rule rule && rule.Variable && rule.Name.Span.SequenceEqual(name.Span))
+                if (r is Rule rule && rule.Variable && rule.Name.Span.Equals(name.Span, StringComparison.Ordinal))
                     return rule;
             }
 

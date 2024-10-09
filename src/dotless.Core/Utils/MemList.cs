@@ -59,7 +59,7 @@ namespace dotless.Core.Utils
 
             for (int i = 0; i < x.Count; i++)
             {
-                if (!x[i].Span.SequenceEqual(y[i].Span)) 
+                if (!x[i].Span.Equals(y[i].Span, StringComparison.Ordinal)) 
                     return false;
             }
             return true;

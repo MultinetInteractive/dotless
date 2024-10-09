@@ -17,7 +17,7 @@
             Value = value;
             IsValidCss = !value.Span.StartsWith("//".AsSpan());
             IsSpecialCss = value.Span.StartsWith("/**".AsSpan()) || value.Span.StartsWith("/*!".AsSpan());
-            IsCSSHack = value.Span.SequenceEqual("/**/".AsSpan()) || value.Span.SequenceEqual("/*\\*/".AsSpan());
+            IsCSSHack = value.Span.Equals("/**/".AsSpan(), StringComparison.Ordinal) || value.Span.Equals("/*\\*/".AsSpan(), StringComparison.Ordinal);
         }
 
         protected override Node CloneCore() {

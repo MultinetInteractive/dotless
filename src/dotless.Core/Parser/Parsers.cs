@@ -1367,7 +1367,7 @@ namespace dotless.Core.Parser
 
                 var preValueComments = GatherAndPullComments(parser);
 
-                if (name.Span.SequenceEqual("font".AsSpan()))
+                if (name.Span.Equals("font".AsSpan(), StringComparison.Ordinal))
                 {
                     value = Font(parser);
                 }
@@ -1612,11 +1612,10 @@ namespace dotless.Core.Parser
             name = directiveName.Value;
             bool hasIdentifier = false, hasBlock = false, isKeyFrame = false;
             NodeList rules, preRulesComments = null, preComments = null;
-            string identifierRegEx = @"[^{]+";
             var nonVendorSpecificName = name;
             var dashIndex = 0;
 
-            if (name.Span.StartsWith("@-".AsSpan()) && (dashIndex = name.Span.Slice(2).IndexOf('-')) > 0)
+            if (name.Span.StartsWith("@-".AsSpan()) && (dashIndex = name.Slice(2).Span.IndexOf('-')) > 0)
             {
                 //+3 is built up of 2 from the slice above and then we want everything after the -
                 nonVendorSpecificName = ("@" + name.Slice(dashIndex + 3).ToString()).AsMemory();
@@ -1666,7 +1665,7 @@ namespace dotless.Core.Parser
             {
                 GatherComments(parser);
 
-                var identifierRegResult = parser.Tokenizer.MatchAny(identifierRegEx);
+                var identifierRegResult = parser.Tokenizer.MatchUntil('{');
                 if (identifierRegResult != null)
                 {
                     identifier = identifierRegResult.Value.Trim();
