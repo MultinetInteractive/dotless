@@ -294,21 +294,38 @@ namespace dotless.Core.Parser
             return null;
         }
 
-        public bool ConsumeWhitespace()
+        public int ConsumeWhitespace()
         {
             if (_i == _inputLength || _chunks[_j].Type != ChunkType.Text)
             {
-                return false;
+                return 0;
             }
 
-            var retVal = false;
+            var retVal = 0;
             while (_i < _inputLength && char.IsWhiteSpace(_input.Span[_i]))
             {
                 Advance(1);
-                retVal = true;
+                retVal++;
             }
 
             return retVal;
+        }
+
+        public RegexMatchResult ConsumeRange(int length)
+        {
+            if (_i == _inputLength || _chunks[_j].Type != ChunkType.Text)
+            {
+                return null;
+            }
+
+            var startingPosition = _i - _current;
+
+            if (startingPosition + length > _chunks[_j].Value.Length)
+                return null;
+
+            var res = new RegexMatchResult(_chunks[_j].Value.Slice(startingPosition, length), GetNodeLocation(startingPosition));
+            Advance(length);          
+            return res;
         }
 
         public RegexMatchResult Match(string tok)
@@ -346,7 +363,7 @@ namespace dotless.Core.Parser
 
         }
 
-        public RegexMatchResult MatchExact(string tok)
+        public RegexMatchResult MatchExact(string tok, StringComparison stringComparison = StringComparison.Ordinal)
         {
             if (_i == _inputLength || _chunks[_j].Type != ChunkType.Text)
             {
@@ -363,7 +380,7 @@ namespace dotless.Core.Parser
 
             var spanToCompare = _chunks[_j].Value.Slice(startingPosition, length);
 
-            if (tok.AsSpan().Equals(spanToCompare.Span, StringComparison.Ordinal))
+            if (tok.AsSpan().Equals(spanToCompare.Span, stringComparison))
             {
                 Advance(length);
                 return new RegexMatchResult(spanToCompare, GetNodeLocation(index));
@@ -451,46 +468,9 @@ namespace dotless.Core.Parser
 
         public RegexMatchResult MatchIdentifier()
         {
-            if (_i == _inputLength || _chunks[_j].Type != ChunkType.Text)
-            {
-                return null;
-            }
-
-            var startingPosition = _i - _current;
-
-            var x = 0;
-
-            char Current()
-            {
-                return _chunks[_j].Value.Span[startingPosition + x];
-            }
-
-            if (Current() != '@')
-                return null;
-
-            x++;
-
-            if (Current() == '@') //allow one more @ char
-                x++;
-
-            while (_chunks[_j].Value.Length > (startingPosition + x) && (char.IsLetterOrDigit(Current()) || Current() == '_' || Current() == '-'))
-            {
-                x++;
-            }
-
-            if (x > 1)
-            {
-                var res = new RegexMatchResult(_chunks[_j].Value.Slice(startingPosition, x), GetNodeLocation(startingPosition));
-                Advance(x);
-
-                return res;
-            }
-            else //just an @ character
-            {
-                return null;
-            }
+            return MatchKeyword(requireStartingAt: true);
         }
-        public RegexMatchResult MatchKeyword()
+        public RegexMatchResult MatchKeyword(bool requireStartingAt = false, bool allowLeadingDigit = true)
         {
             if (_i == _inputLength || _chunks[_j].Type != ChunkType.Text)
             {
@@ -500,10 +480,31 @@ namespace dotless.Core.Parser
             var startingPosition = _i - _current;
 
             var x = 0;
+            var requiredLength = 0;
 
             char Current()
             {
                 return _chunks[_j].Value.Span[startingPosition + x];
+            }
+
+            if (requireStartingAt)
+            {
+                if (Current() != '@')
+                    return null;
+                requiredLength++;
+                x++;
+
+                if (Current() == '@') //allow one more @ char
+                {
+                    x++;
+                    requiredLength++;
+                }
+            }
+
+            if (!allowLeadingDigit)
+            {
+                if (_chunks[_j].Value.Length > (startingPosition + x) && char.IsDigit(Current()))
+                    return null;
             }
 
             while (_chunks[_j].Value.Length > (startingPosition + x) && (char.IsLetterOrDigit(Current()) || Current() == '_' || Current() == '-'))
@@ -511,7 +512,7 @@ namespace dotless.Core.Parser
                 x++;
             }
 
-            if(x > 0)
+            if (x > requiredLength)
             {
                 var res = new RegexMatchResult(_chunks[_j].Value.Slice(startingPosition, x), GetNodeLocation(startingPosition));
                 Advance(x);
@@ -615,10 +616,12 @@ namespace dotless.Core.Parser
             return new RegexMatchResult(match);
         }
 
-        public void Advance(int length)
+        public int Advance(int length)
         {
             if (_i == _inputLength) //only for empty cases as there may not be any chunks
-                return;
+                return 0;
+
+            int startvalue = _i;
 
             // The match is confirmed, add the match length to `i`,
             // and consume any extra white-space characters (' ' || '\n')
@@ -649,6 +652,8 @@ namespace dotless.Core.Parser
 
                 _i++;
             }
+
+            return _i - startvalue;
         }
 
         // Same as Match, but don't change the state of the parser,

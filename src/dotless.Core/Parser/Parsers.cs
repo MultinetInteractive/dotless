@@ -993,7 +993,7 @@ namespace dotless.Core.Parser
 
             if(semi)
             {
-                while (parser.Tokenizer.Match(';') || parser.Tokenizer.ConsumeWhitespace()) ;
+                while (parser.Tokenizer.Match(';') || parser.Tokenizer.ConsumeWhitespace() > 0) ;
             }
 
             return semi || parser.Tokenizer.Peek('}');
@@ -1011,7 +1011,25 @@ namespace dotless.Core.Parser
             var index = parser.Tokenizer.Location.Index;
 
             // Allow for whitespace on both sides of the equals sign since IE seems to allow it too
-            if (!parser.Tokenizer.Match(@"opacity\s*=\s*", true))
+
+            bool MatchOpacity()
+            {
+                var memo = Remember(parser);
+
+                if (!parser.Tokenizer.MatchExact("opacity", StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                if(!parser.Tokenizer.Match('='))
+                {
+                    Recall(parser, memo);
+                    return false;
+                }
+                return true;
+            }
+
+            if (char.ToLower(parser.Tokenizer.CurrentChar) != 'o' || !MatchOpacity())
                 return null;
 
             if (value = parser.Tokenizer.MatchInt() || Variable(parser))
@@ -1890,9 +1908,23 @@ namespace dotless.Core.Parser
 
         public ReadOnlyMemory<char> Important(Parser parser)
         {
-            var important = parser.Tokenizer.Match(@"!\s*important");
+            if (parser.Tokenizer.CurrentChar != '!')
+                return null;
 
-            return important == null ? ReadOnlyMemory<char>.Empty : important.Value;
+            var memo = Remember(parser);
+
+            int consumedChars = parser.Tokenizer.Advance(1); //Advance consumes excess whitespace
+
+            var importantTag = parser.Tokenizer.MatchExact("important");
+
+            Recall(parser, memo);
+
+            if (importantTag)
+            {
+                return parser.Tokenizer.ConsumeRange(consumedChars + importantTag.Value.Length).Value;
+            }
+
+            return ReadOnlyMemory<char>.Empty;
         }
 
         public ReadOnlyMemory<char> IESlash9Hack(Parser parser)
@@ -1932,7 +1964,7 @@ namespace dotless.Core.Parser
                 GatherComments(parser); // after left operand
 
                 var index = parser.Tokenizer.Location.Index;
-                var op = parser.Tokenizer.Match(@"[\/*]");
+                var op = parser.Tokenizer.Match('/','*');
 
                 GatherComments(parser); // after operation
 
@@ -1949,6 +1981,10 @@ namespace dotless.Core.Parser
         {
             const string rangeRegex = "(U\\+[0-9a-f]+(-[0-9a-f]+))";
             const string valueOrWildcard = "(U\\+[0-9a-f?]+)";
+
+            if (char.ToLower(parser.Tokenizer.CurrentChar) != 'u' || parser.Tokenizer.NextChar != '+')
+                return null;
+
             return parser.Tokenizer.Match(rangeRegex, true)
                    ?? parser.Tokenizer.Match(valueOrWildcard, true);
         }
@@ -2055,7 +2091,7 @@ namespace dotless.Core.Parser
 #if CSS3EXPERIMENTAL
             while (e = RepeatPattern(parser) || Operation(parser) || Entity(parser))
 #else 
-            while (e = UnicodeRange(parser) || Operation(parser) || Entity(parser) || parser.Tokenizer.Match(@"[-+*/]"))
+            while (e = UnicodeRange(parser) || Operation(parser) || Entity(parser) || parser.Tokenizer.Match('-', '+', '*', '/'))
 #endif
             {
                 e.PostComments = PullComments();
@@ -2093,12 +2129,38 @@ namespace dotless.Core.Parser
 
         public ReadOnlyMemory<char> Property(Parser parser)
         {
-            var name = parser.Tokenizer.Match(@"\*?-?[-_a-zA-Z][-_a-z0-9A-Z]*(?:\+_?)?");
+            var currentChar = parser.Tokenizer.CurrentChar;
 
-            if (name)
-                return name.Value;
+            if (currentChar != '*' && currentChar != '-' && currentChar != '_' && !char.IsLetter(currentChar))
+            {
+                return null;
+            }
 
-            return ReadOnlyMemory<char>.Empty;
+            var memo = Remember(parser);
+            int length = 0;
+            if (parser.Tokenizer.Match('*'))
+                length++;
+            if (parser.Tokenizer.Match('-'))
+                length++;
+
+            var propertyName = parser.Tokenizer.MatchKeyword(allowLeadingDigit: false);
+
+            if (!propertyName)
+            {
+                Recall(parser, memo);
+                return ReadOnlyMemory<char>.Empty;
+            }
+
+            length += propertyName.Value.Length;
+
+            if (parser.Tokenizer.Match('+'))
+                length++;
+
+            if (parser.Tokenizer.Match('_'))
+                length++;
+
+            Recall(parser, memo);
+            return parser.Tokenizer.ConsumeRange(length).Value;
         }
 
         public void Expect(Parser parser, char expectedString)
