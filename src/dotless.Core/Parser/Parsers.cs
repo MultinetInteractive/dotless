@@ -515,12 +515,12 @@ namespace dotless.Core.Parser
                 Selector s;
                 while (s = Selector(parser))
                 {
-                    if (s.Elements.Count == 1 && s.Elements.First().Value == null)
+                    if (s.Elements.Count == 1 && !s.Elements.First().HasStringValue)
                     {
                         continue;
                     }
 
-                    if (s.Elements.Count > 1 && s.Elements.Last().Value == "all")
+                    if (s.Elements.Count > 1 && s.Elements.Last().Value.AsMemory().Span.SequenceEqual("all".AsSpan()))
                     {
                         s.Elements.Remove(s.Elements.Last());
                         partial.Add(s);

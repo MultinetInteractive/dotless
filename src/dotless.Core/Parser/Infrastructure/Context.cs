@@ -33,7 +33,7 @@
 
         private void AppendSelector(Context context, Selector selector)
         {
-            if (!selector.Elements.Any(e => e.Value == "&"))
+            if (!selector.Elements.Any(e => e.Value.AsMemory().Span.SequenceEqual("&".AsSpan())))
             {
                 if (context != null && context.Paths.Count > 0)
                 {
@@ -67,7 +67,7 @@
             foreach (Element el in selector.Elements)
             {
                 // non parent reference elements just get added
-                if (el.Value != "&")
+                if (!el.Value.AsMemory().Span.SequenceEqual("&".AsSpan()))
                 {
                     currentElements.Add(el);
                 } else
@@ -137,7 +137,7 @@
                                     newJoinedSelectorEmpty = false;
 
                                     // join the elements so far with the first part of the parent
-                                    if (parentSel[0].Elements[0].Value == null)
+                                    if (!parentSel[0].Elements[0].HasStringValue)
                                     {
                                         newJoinedSelector.Elements.Add(new Element(el.Combinator, parentSel[0].Elements[0].NodeValue));
                                     }
@@ -212,7 +212,7 @@
                 var previousElement = elements[i - 1];
                 var currentElement = elements[i];
 
-                if (string.IsNullOrEmpty(currentElement.Value)) {
+                if (!currentElement.HasStringValue || currentElement.Value == string.Empty) {
                     continue;
                 }
 

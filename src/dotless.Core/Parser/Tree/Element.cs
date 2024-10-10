@@ -7,12 +7,21 @@
     public class Element : Node
     {
         public Combinator Combinator { get; set; }
-        public string Value { get; set; }
+
+        private string _value;
+        public string Value { 
+            get { return _value; } 
+            set { 
+                _value = value; HasStringValue = true; 
+            } 
+        }
+        public bool HasStringValue { get; private set; }
         public Node NodeValue { get; set; }
 
         public Element(Combinator combinator, string textValue) : this(combinator)
         {
             Value = textValue.Trim();
+            HasStringValue = true;
         }
 
         public Element(Combinator combinator, Node value) : this(combinator)
@@ -20,6 +29,7 @@
             if (value is TextNode textValue && !(value is Quoted))
             {
                 Value = textValue.Value.ToString().Trim();
+                HasStringValue = true;
             }
             else
             {
@@ -81,7 +91,11 @@
         }
 
         internal Element Clone() {
-            return new Element(Combinator) { Value = Value, NodeValue = NodeValue};
+
+            if (Value != null) {
+                return new Element(Combinator, Value);
+            }
+            return new Element(Combinator, NodeValue);
         }
     }
 }

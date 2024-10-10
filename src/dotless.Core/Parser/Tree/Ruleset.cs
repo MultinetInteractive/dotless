@@ -162,12 +162,12 @@ namespace dotless.Core.Parser.Tree
 
         private static bool ElementValuesEqual(Element e1, Element e2)
         {
-            if (e1.Value == null && e2.Value == null)
+            if (!e1.HasStringValue && !e2.HasStringValue)
             {
                 return true;
             }
 
-            if (e1.Value == null || e2.Value == null)
+            if (!e1.HasStringValue || !e2.HasStringValue)
             {
                 return false;
             }
@@ -507,7 +507,7 @@ namespace dotless.Core.Parser.Tree
 
         private bool AddExtenders(Env env, Context context, Context paths) {
             bool hasNonReferenceExtenders = false;
-            foreach (var s in Selectors.Where(s => s.Elements.First().Value != null)) {
+            foreach (var s in Selectors.Where(s => s.Elements.First().HasStringValue)) {
                 var local = context.Clone();
                 local.AppendSelectors(context, new[] {s});
                 var finalString = local.ToCss(env);
