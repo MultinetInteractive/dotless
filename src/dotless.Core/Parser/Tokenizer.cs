@@ -927,7 +927,7 @@ namespace dotless.Core.Parser
         }
     }
 
-    public class Location 
+    public struct Location 
     {
         public int Index { get; set; }
         public int CurrentChunk { get; set; }
