@@ -377,7 +377,7 @@ namespace dotless.Core.Parser
             return Match(tok, false);
         }
 
-        public RegexMatchResult MatchUntil(char c)
+        public RegexMatchResult MatchUntil(char c, bool matchUntilLastInstance = false, bool includeEndChar = false, char? charThatResetsCounter = null, bool failIfResetCharIsFound = false)
         {
             if (_i == _input.Length)
             {
@@ -389,22 +389,59 @@ namespace dotless.Core.Parser
             if (startingPosition > _input.Length)
                 return null;
 
+            int endLength = 0;
+
             var x = 0;
 
-            while(startingPosition + x < _input.Length && _input.Span[startingPosition + x] != c)
+            while (startingPosition + x < _input.Length)
             {
+                var currentChar = _input.Span[startingPosition + x];
+                if (currentChar == c)
+                {
+                    if (includeEndChar)
+                    {
+                        x++;
+                    }
+
+                    endLength = x;
+
+                    if (!matchUntilLastInstance)
+                    {
+                        break;
+                    }
+                }
+
                 x++;
+
+                if (charThatResetsCounter != null && currentChar == charThatResetsCounter.Value)
+                {
+                    if(failIfResetCharIsFound)
+                    {
+                        x = 0;
+                        break;
+                    }
+
+                    if (endLength > 0) //if we've seen the endingtoken we shouldn't start a new matchingprocess
+                    {
+                        break;
+                    }
+
+                    startingPosition += x;
+                    endLength = 0;
+                    x = 0;
+                }
             }
 
-            if(x > 0)
+            if (x > 0)
             {
-                var res = new RegexMatchResult(_input.Slice(startingPosition, x), GetNodeLocation(startingPosition));
-                Advance(x);
+                var nLength = endLength > 0 ? endLength : x;
+                var res = new RegexMatchResult(_input.Slice(startingPosition, nLength), GetNodeLocation(startingPosition));
+                Advance(nLength);
 
                 return res;
             }
+            
             return null;
-
         }
 
         public RegexMatchResult MatchExact(string tok, StringComparison stringComparison = StringComparison.Ordinal)

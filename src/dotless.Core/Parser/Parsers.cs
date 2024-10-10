@@ -840,8 +840,16 @@ namespace dotless.Core.Parser
         //
         public MixinDefinition MixinDefinition(Parser parser)
         {
+            bool hasEndCurly()
+            {
+                var curlyMemo = Remember(parser);
+                var res = parser.Tokenizer.MatchUntil('}', true, true, '{', true);
+                Recall(parser, curlyMemo);
+                return res;
+            }
+
             if ((parser.Tokenizer.CurrentChar != '.' && parser.Tokenizer.CurrentChar != '#') ||
-                parser.Tokenizer.Peek(@"[^{]*}"))
+                hasEndCurly())
                 return null;
 
             var index = parser.Tokenizer.Location.Index;
@@ -1099,6 +1107,14 @@ namespace dotless.Core.Parser
             return null;
         }
 
+        public bool PeekExact(Parser parser, string str, StringComparison comparison = StringComparison.Ordinal)
+        {
+            var memo = Remember(parser);
+            var res = parser.Tokenizer.MatchExact(str, comparison);
+            Recall(parser, memo);
+            return res;
+        }
+
         //
         // A Selector Element
         //
@@ -1124,7 +1140,8 @@ namespace dotless.Core.Parser
             PushComments();
             GatherComments(parser); // to collect, combinator must have picked up something which would require memory anyway
 
-            if (parser.Tokenizer.Peek("when"))
+
+            if (PeekExact(parser, "when"))
             {
                 return null;
             }
@@ -2124,7 +2141,7 @@ namespace dotless.Core.Parser
                     operand;
             }
 
-            if (parser.Tokenizer.CurrentChar == 'u' && parser.Tokenizer.Peek(@"url\("))
+            if (parser.Tokenizer.CurrentChar == 'u' && PeekExact(parser, @"url("))
                 return null;
 
             return Call(parser) || Keyword(parser);
