@@ -7,6 +7,7 @@
     using Utils;
     using dotless.Core.Parser.Infrastructure.Nodes;
     using System;
+    using System.Runtime;
 
     public class Context : IEnumerable<IEnumerable<Selector>>
     {
@@ -33,7 +34,7 @@
 
         private void AppendSelector(Context context, Selector selector)
         {
-            if (!selector.Elements.Any(e => e.Value.AsMemory().Span.SequenceEqual("&".AsSpan())))
+            if (!selector.Elements.Any(e => e.Value.Span.SequenceEqual("&".AsSpan())))
             {
                 if (context != null && context.Paths.Count > 0)
                 {
@@ -67,7 +68,7 @@
             foreach (Element el in selector.Elements)
             {
                 // non parent reference elements just get added
-                if (!el.Value.AsMemory().Span.SequenceEqual("&".AsSpan()))
+                if (!el.Value.Span.SequenceEqual("&".AsSpan()))
                 {
                     currentElements.Add(el);
                 } else
@@ -94,7 +95,7 @@
                             if (sel.Count > 0)
                             {
                                 sel[0].Elements = new NodeList<Element>(sel[0].Elements);
-                                sel[0].Elements.Add(new Element(el.Combinator,  ""));
+                                sel[0].Elements.Add(new Element(el.Combinator,  ReadOnlyMemory<char>.Empty));
                             }
                             selectorsMultiplied.Add(sel);
                         }
@@ -212,11 +213,11 @@
                 var previousElement = elements[i - 1];
                 var currentElement = elements[i];
 
-                if (!currentElement.HasStringValue || currentElement.Value == string.Empty) {
+                if (!currentElement.HasStringValue || currentElement.Value.IsEmpty) {
                     continue;
                 }
 
-                if (LeaveUnmerged.Contains(currentElement.Value[0])) {
+                if (LeaveUnmerged.Contains(currentElement.Value.Span[0])) {
                     continue;
                 }
 
@@ -224,7 +225,9 @@
                     continue;
                 }
 
-                elements[i - 1] = new Element(previousElement.Combinator, previousElement.Value += currentElement.Value);
+                previousElement.Value = (previousElement.Value.ToString() + currentElement.Value.ToString()).AsMemory();
+
+                elements[i - 1] = new Element(previousElement.Combinator, previousElement.Value);
                 elements.RemoveAt(i);
                 i--;
             }
@@ -247,9 +250,59 @@
             env.Output.AppendMany(selectors, env.Compress ? ",".AsMemory() : ",\n".AsMemory());
         }
 
-        public string ToCss(Env env)
+        public ReadOnlyMemory<char> ToCss(Env env)
         {
-            return string.Join(env.Compress ? "," : ",\n",Paths.Select(path => path.Select(p => p.ToCSS(env).ToString()).JoinStrings("").Trim()).ToArray());
+            var memList = new MemList();
+
+            for (int i = 0; i < Paths.Count; i++)
+            {
+                var path = Paths[i];
+
+                var cssList = path.Select(p => p.ToCSS(env)).ToArray();
+                int firstIndexWithValue = -1;
+                int lastIndexWithValue = -1;
+
+                for (var x = 0; x < cssList.Length; x++)
+                {
+                    if (cssList[x].Length > 0)
+                        cssList[x] = cssList[x].TrimLeft();
+                    if (cssList[x].Length > 0)
+                    {
+                        firstIndexWithValue = x;
+                        break;
+                    }
+                }
+
+                for (var y = cssList.Length-1; y >= 0; y--)
+                {
+                    if (cssList[y].Length > 0)
+                        cssList[y] = cssList[y].TrimRight();
+                    if (cssList[y].Length > 0)
+                    {
+                        lastIndexWithValue = y;
+                        break;
+                    }
+                }
+
+                
+
+                if (firstIndexWithValue >= 0)
+                {
+                    if (i > 0)
+                    {
+                        memList.Add(env.Compress ? ",".AsMemory() : ",\n".AsMemory());
+                    }
+
+                    for (int j = firstIndexWithValue; j <= lastIndexWithValue; j++)
+                    {
+                        memList.Add(cssList[j]);
+                    }
+                }
+
+            }
+
+            return memList.ToMemory();
+
         }
 
         public int Count

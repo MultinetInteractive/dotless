@@ -105,7 +105,7 @@
             return new MixinCall(elements, arguments, important) { Location = location };
         }
 
-        public MixinDefinition MixinDefinition(string name, NodeList<Rule> parameters, NodeList rules, Condition condition, bool variadic, NodeLocation location)
+        public MixinDefinition MixinDefinition(ReadOnlyMemory<char> name, NodeList<Rule> parameters, NodeList rules, Condition condition, bool variadic, NodeLocation location)
         {
             return new MixinDefinition(name, parameters, rules, condition, variadic) { Location = location };
         }

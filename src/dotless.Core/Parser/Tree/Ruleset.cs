@@ -172,7 +172,7 @@ namespace dotless.Core.Parser.Tree
                 return false;
             }
 
-            return string.Equals(e1.Value.Trim(), e2.Value.Trim());
+            return e1.Value.Trim().Span.SequenceEqual(e2.Value.Trim().Span);
         }
 
         public virtual MixinMatch MatchArguments(List<NamedArgument> arguments, Env env)

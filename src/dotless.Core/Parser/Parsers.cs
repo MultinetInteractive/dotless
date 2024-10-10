@@ -520,7 +520,7 @@ namespace dotless.Core.Parser
                         continue;
                     }
 
-                    if (s.Elements.Count > 1 && s.Elements.Last().Value.AsMemory().Span.SequenceEqual("all".AsSpan()))
+                    if (s.Elements.Count > 1 && s.Elements.Last().Value.Span.SequenceEqual("all".AsSpan()))
                     {
                         s.Elements.Remove(s.Elements.Last());
                         partial.Add(s);
@@ -934,7 +934,7 @@ namespace dotless.Core.Parser
             PopComments();
 
             if (rules != null)
-                return NodeProvider.MixinDefinition(name, parameters, rules, condition, variadic, parser.Tokenizer.GetNodeLocation(index));
+                return NodeProvider.MixinDefinition(name.AsMemory(), parameters, rules, condition, variadic, parser.Tokenizer.GetNodeLocation(index));
 
             Recall(parser, memo);
 

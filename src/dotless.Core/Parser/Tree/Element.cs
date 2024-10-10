@@ -1,15 +1,17 @@
 ﻿namespace dotless.Core.Parser.Tree
 {
+    using System;
     using Infrastructure;
     using Infrastructure.Nodes;
     using Plugins;
+    using dotless.Core.Utils;
 
     public class Element : Node
     {
         public Combinator Combinator { get; set; }
 
-        private string _value;
-        public string Value { 
+        private ReadOnlyMemory<char> _value;
+        public ReadOnlyMemory<char> Value { 
             get { return _value; } 
             set { 
                 _value = value; HasStringValue = true; 
@@ -18,7 +20,7 @@
         public bool HasStringValue { get; private set; }
         public Node NodeValue { get; set; }
 
-        public Element(Combinator combinator, string textValue) : this(combinator)
+        public Element(Combinator combinator, ReadOnlyMemory<char> textValue) : this(combinator)
         {
             Value = textValue.Trim();
             HasStringValue = true;
@@ -28,7 +30,7 @@
         {
             if (value is TextNode textValue && !(value is Quoted))
             {
-                Value = textValue.Value.ToString().Trim();
+                Value = textValue.Value.Trim();
                 HasStringValue = true;
             }
             else
@@ -92,7 +94,7 @@
 
         internal Element Clone() {
 
-            if (Value != null) {
+            if (HasStringValue) {
                 return new Element(Combinator, Value);
             }
             return new Element(Combinator, NodeValue);

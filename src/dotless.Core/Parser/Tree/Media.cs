@@ -7,6 +7,7 @@ namespace dotless.Core.Parser.Tree
     using System.Linq;
     using Infrastructure;
     using Infrastructure.Nodes;
+    using dotless.Core.Utils;
 
     public class Media : Ruleset
     {
@@ -32,7 +33,7 @@ namespace dotless.Core.Parser.Tree
 
         public static NodeList<Selector> GetEmptySelector()
         {
-            return new NodeList<Selector>() { new Selector(new NodeList<Element>() { new Element(new Combinator(ReadOnlyMemory<char>.Empty), "&") }) };
+            return new NodeList<Selector>() { new Selector(new NodeList<Element>() { new Element(new Combinator(ReadOnlyMemory<char>.Empty), "&".AsMemory()) }) };
         }
 
         public override void Accept(Plugins.IVisitor visitor)
@@ -294,9 +295,9 @@ namespace dotless.Core.Parser.Tree
             return Extensions.Where(e => !e.IsMatched);
         }
 
-        public ExactExtender FindExactExtension(string selection)
+        public ExactExtender FindExactExtension(ReadOnlyMemory<char> selection)
         {
-            return Extensions.OfType<ExactExtender>().FirstOrDefault(e => e.BaseSelector.ToString().Trim() == selection);
+            return Extensions.OfType<ExactExtender>().FirstOrDefault(e => e.BaseSelector.ToMemory().Trim().Span.SequenceEqual(selection.Span));
         }
 
         public PartialExtender[] FindPartialExtensions(Context selection)

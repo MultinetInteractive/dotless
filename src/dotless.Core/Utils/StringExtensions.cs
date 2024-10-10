@@ -96,17 +96,20 @@
 
         public static ReadOnlyMemory<char> Trim(this ReadOnlyMemory<char> input, char? c = null)
         {
-            return input.TrimLeft(c).TrimRight(c);
+            if (c.HasValue)
+                return input.TrimLeft(c.Value).TrimRight(c.Value);
+            else
+                return input.TrimLeft().TrimRight();
         }
 
-        public static ReadOnlyMemory<char> TrimLeft(this ReadOnlyMemory<char> input, char? c)
+        public static ReadOnlyMemory<char> TrimLeft(this ReadOnlyMemory<char> input, params char[] cArr)
         {
             int trimLength = 0;
-            if (c.HasValue)
+            if (cArr.Length > 0)
             {
                 while (input.Length > trimLength)
                 {
-                    if (input.Span[trimLength] == c.Value)
+                    if (cArr.Contains(input.Span[trimLength]))
                     {
                         trimLength++;
                     }
@@ -134,32 +137,14 @@
             return input.Slice(trimLength);
         }
 
-        public static ReadOnlyMemory<char> TrimLeft(this ReadOnlyMemory<char> input, params char[] cArr)
-        {
-            int trimLength = 0;
-            while (input.Length > trimLength)
-            {
-                if (cArr.Contains(input.Span[trimLength]))
-                {
-                    trimLength++;
-                }
-                else
-                {
-                    break;
-                }
-            }
-
-            return input.Slice(trimLength);
-        }
-
-        public static ReadOnlyMemory<char> TrimRight(this ReadOnlyMemory<char> input, char? c)
+        public static ReadOnlyMemory<char> TrimRight(this ReadOnlyMemory<char> input, params char[] cArr)
         {
             int lastIndex = input.Length - 1;
-            if (c.HasValue)
+            if (cArr.Length > 0)
             {
                 while (lastIndex >= 0)
                 {
-                    if (input.Span[lastIndex] == c.Value)
+                    if (cArr.Contains(input.Span[lastIndex]))
                     {
                         lastIndex--;
                     }
@@ -181,24 +166,6 @@
                     {
                         break;
                     }
-                }
-            }
-
-            return input.Slice(0, lastIndex + 1);
-        }
-
-        public static ReadOnlyMemory<char> TrimRight(this ReadOnlyMemory<char> input, params char[] cArr)
-        {
-            int lastIndex = input.Length - 1;
-            while (lastIndex >= 0)
-            {
-                if (cArr.Contains(input.Span[lastIndex]))
-                {
-                    lastIndex--;
-                }
-                else
-                {
-                    break;
                 }
             }
             

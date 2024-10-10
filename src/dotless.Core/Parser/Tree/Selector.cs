@@ -25,7 +25,7 @@ namespace dotless.Core.Parser.Tree
         {
             return
                 other.Elements.Count <= Elements.Count &&
-                Elements[0].Value == other.Elements[0].Value;
+                Elements[0].Value.Span.SequenceEqual(other.Elements[0].Value.Span);
         }
 
 
@@ -123,6 +123,11 @@ namespace dotless.Core.Parser.Tree
         public override string ToString()
         {
             return ToCSS(new Env(null)).ToString();
+        }
+
+        public ReadOnlyMemory<char> ToMemory()
+        {
+            return ToCSS(new Env(null));
         }
     }
 }

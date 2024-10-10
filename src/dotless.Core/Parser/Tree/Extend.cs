@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using dotless.Core.Parser.Infrastructure;
 using dotless.Core.Parser.Infrastructure.Nodes;
+using dotless.Core.Utils;
 
 namespace dotless.Core.Parser.Tree
 {
@@ -26,7 +27,7 @@ namespace dotless.Core.Parser.Tree
             {
                 var childContext = env.CreateChildEnv();
                 e.AppendCSS(childContext);
-                var selector = new Selector(new []{new Element(e.Elements.First().Combinator,childContext.Output.ToString().Trim())});
+                var selector = new Selector(new []{new Element(e.Elements.First().Combinator,childContext.Output.ToMemory().Trim())});
                 selector.IsReference = IsReference;
                 newExact.Add(selector);
             }
@@ -36,7 +37,7 @@ namespace dotless.Core.Parser.Tree
             {
                 var childContext = env.CreateChildEnv();
                 e.AppendCSS(childContext);
-                var selector = new Selector(new[] { new Element(e.Elements.First().Combinator, childContext.Output.ToString().Trim()) });
+                var selector = new Selector(new[] { new Element(e.Elements.First().Combinator, childContext.Output.ToMemory().Trim()) });
                 selector.IsReference = IsReference;
                 newPartial.Add(selector);
             }

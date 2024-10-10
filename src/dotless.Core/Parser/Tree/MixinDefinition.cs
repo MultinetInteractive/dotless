@@ -12,12 +12,12 @@
     {
         private int _required;
         private int _arity;
-        public string Name { get; set; }
+        public ReadOnlyMemory<char> Name { get; set; }
         public NodeList<Rule> Params { get; set; }
         public Condition Condition { get; set; }
         public bool Variadic { get; set; }
 
-        public MixinDefinition(string name, NodeList<Rule> parameters, NodeList rules, Condition condition, bool variadic)
+        public MixinDefinition(ReadOnlyMemory<char> name, NodeList<Rule> parameters, NodeList rules, Condition condition, bool variadic)
         {
             Name = name;
             Params = parameters;

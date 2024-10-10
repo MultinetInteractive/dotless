@@ -395,7 +395,7 @@ namespace dotless.Core.Parser.Infrastructure
             return _extensions.Where(e => !e.IsMatched);
         }
 
-        public ExactExtender FindExactExtension(string selection)
+        public ExactExtender FindExactExtension(ReadOnlyMemory<char> selection)
         {
             if (ExtendMediaScope.Any())
             {
@@ -405,7 +405,7 @@ namespace dotless.Core.Parser.Infrastructure
                 }
             }
 
-            return _extensions.OfType<ExactExtender>().FirstOrDefault(e => e.BaseSelector.ToString().Trim() == selection);
+            return _extensions.OfType<ExactExtender>().FirstOrDefault(e => e.BaseSelector.ToMemory().Trim().Span.SequenceEqual(selection.Span));
         }
 
         public PartialExtender[] FindPartialExtensions(Context selection)

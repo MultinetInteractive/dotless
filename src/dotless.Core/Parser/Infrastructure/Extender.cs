@@ -34,11 +34,11 @@ namespace dotless.Core.Parser.Infrastructure
 
         }
 
-        public IEnumerable<Selector> Replacements(string selection)
+        public IEnumerable<Selector> Replacements(ReadOnlyMemory<char> selection)
         {
             foreach (var ex in ExtendedBy)
             {
-                yield return new Selector(new []{new Element(null, selection.Replace(BaseSelector.ToString().Trim(), ex.ToString().Trim()))});       
+                yield return new Selector(new []{new Element(null, selection.ToString().Replace(BaseSelector.ToMemory().Trim().ToString(), ex.ToString().Trim()).AsMemory())});       
             }
         }
     }
@@ -74,11 +74,11 @@ namespace dotless.Core.Parser.Infrastructure
             return extender.BaseSelector.Elements.IsSubsequenceOf(list, (subIndex, subElement, index, seqelement) => {
                 if (subIndex < count - 1) {
                     return Equals(subElement.Combinator, seqelement.Combinator) &&
-                           string.Equals(subElement.Value, seqelement.Value) &&
+                           subElement.Value.Span.SequenceEqual(seqelement.Value.Span) &&
                            Equals(subElement.NodeValue, seqelement.NodeValue);
                 }
 
-                return string.Equals(subElement.Value, seqelement.Value) &&
+                return subElement.Value.Span.SequenceEqual(seqelement.Value.Span) &&
                        Equals(subElement.NodeValue, seqelement.NodeValue);
             });
         }
