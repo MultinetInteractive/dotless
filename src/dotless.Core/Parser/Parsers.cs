@@ -332,7 +332,7 @@ namespace dotless.Core.Parser
             var value = Entity(parser);
 
             if (value) {
-                return NodeProvider.Assignment(key.Value.ToString(), value, key.Location);
+                return NodeProvider.Assignment(key.Value, value, key.Location);
             }
 
             return null;
@@ -419,7 +419,7 @@ namespace dotless.Core.Parser
             var index = parser.Tokenizer.Location.Index;
 
             if (parser.Tokenizer.CurrentChar == '@' && (name = parser.Tokenizer.Match(@"@\{(?<name>@?[a-zA-Z0-9_-]+)\}")))
-                return NodeProvider.Variable("@" + name.Match.Groups["name"].Value, parser.Tokenizer.GetNodeLocation(index));
+                return NodeProvider.Variable(("@" + name.Match.Groups["name"].Value).AsMemory(), parser.Tokenizer.GetNodeLocation(index));
 
             return null;
         }
@@ -448,7 +448,7 @@ namespace dotless.Core.Parser
                 }
 
                 parser.Tokenizer.Advance(1);
-                return NodeProvider.Variable("@" + variableName.Value.ToString(), parser.Tokenizer.GetNodeLocation(index));
+                return NodeProvider.Variable(("@" + variableName.Value.ToString()).AsMemory(), parser.Tokenizer.GetNodeLocation(index));
             }
 
             return null;

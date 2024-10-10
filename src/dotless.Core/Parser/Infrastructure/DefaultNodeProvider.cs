@@ -75,11 +75,6 @@
             return new Shorthand(first, second) { Location = location };
         }
 
-        public Variable Variable(string name, NodeLocation location)
-        {
-            return new Variable(name) { Location = location };
-        }
-
         public Variable Variable(ReadOnlyMemory<char> name, NodeLocation location)
         {
             return new Variable(name) { Location = location };
@@ -155,7 +150,7 @@
             return new Operation(operation, left, right) { Location = location };
         }
 
-        public Assignment Assignment(string key, Node value, NodeLocation location)
+        public Assignment Assignment(ReadOnlyMemory<char> key, Node value, NodeLocation location)
         {
             return new Assignment(key, value) {Location = location};
         }

@@ -52,14 +52,24 @@ using System.Text;
                 .Append(RenderString());
         }
 
-        public MemList RenderString()
+        private ReadOnlyMemory<char> quotedString;
+
+        public ReadOnlyMemory<char> RenderString()
         {
             if (Escaped)
             {
-                return new MemList() { UnescapeContents().AsMemory() };
+                return UnescapeContents().AsMemory();
             }
 
             var list = new MemList();
+
+            if (!Quote.HasValue)
+                return Value;
+
+            if(quotedString.Length == (Value.Length + 2) && quotedString.Slice(1, Value.Length).Span.Equals(Value.Span, StringComparison.Ordinal))
+            {
+                return quotedString;
+            }
 
             if (Quote.HasValue)
                 list.Add(new[] { Quote.Value });
@@ -68,12 +78,18 @@ using System.Text;
             if (Quote.HasValue)
                 list.Add(new[] { Quote.Value });
 
-            return list;
+            quotedString = list.ToMemory();
+            return quotedString;
         }
 
         public override string ToString()
         {
             return RenderString().ToString();
+        }
+
+        public override ReadOnlyMemory<char> ToMemory()
+        {
+            return RenderString();
         }
 
         public override Node Evaluate(Env env)

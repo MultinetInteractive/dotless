@@ -361,7 +361,7 @@ namespace dotless.Core.Parser.Infrastructure
             foreach (var extending in extends.Exact)
             {
                 Extender match = null;
-                if ((match = _extensions.OfType<ExactExtender>().FirstOrDefault(e => e.BaseSelector.ToString().Trim() == extending.ToString().Trim())) == null)
+                if ((match = _extensions.OfType<ExactExtender>().FirstOrDefault(e => e.BaseSelector.ToMemory().Trim().Span.Equals(extending.ToMemory().Trim().Span, StringComparison.Ordinal))) == null)
                 {
                     match = new ExactExtender(extending, extends);
                     _extensions.Add(match);
@@ -373,7 +373,7 @@ namespace dotless.Core.Parser.Infrastructure
             foreach (var extending in extends.Partial)
             {
                 Extender match = null;
-                if ((match = _extensions.OfType<PartialExtender>().FirstOrDefault(e => e.BaseSelector.ToString().Trim() == extending.ToString().Trim())) == null)
+                if ((match = _extensions.OfType<PartialExtender>().FirstOrDefault(e => e.BaseSelector.ToMemory().Trim().Span.Equals(extending.ToMemory().Trim().Span, StringComparison.Ordinal))) == null)
                 {
                     match = new PartialExtender(extending, extends);
                     _extensions.Add(match);
@@ -434,7 +434,7 @@ namespace dotless.Core.Parser.Infrastructure
                 }
             }
 
-            return _extensions.OfType<PartialExtender>().Where(e => selection.Contains(e.BaseSelector.ToString().Trim())).ToArray();
+            return _extensions.OfType<PartialExtender>().Where(e => selection.AsSpan().Contains(e.BaseSelector.ToMemory().Trim().Span, StringComparison.Ordinal)).ToArray();
         }
 
         public override string ToString()

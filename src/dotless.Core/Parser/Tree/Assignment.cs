@@ -1,14 +1,15 @@
 ﻿namespace dotless.Core.Parser.Tree
 {
+    using System;
     using Infrastructure;
     using Infrastructure.Nodes;
 
     public class Assignment : Node
     {
-        public string Key { get; set; }
+        public ReadOnlyMemory<char> Key { get; set; }
         public Node Value { get; set; }
 
-        public Assignment(string key, Node value)
+        public Assignment(ReadOnlyMemory<char> key, Node value)
         {
             Key = key;
             Value = value;

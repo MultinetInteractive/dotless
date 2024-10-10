@@ -41,6 +41,11 @@ namespace dotless.Core.Parser.Infrastructure.Nodes
             return Value.ToString();
         }
 
+        public virtual ReadOnlyMemory<char> ToMemory()
+        {
+            return Value;
+        }
+
         public virtual int CompareTo(object obj)
         {
             if (obj == null)
@@ -48,7 +53,7 @@ namespace dotless.Core.Parser.Infrastructure.Nodes
                 return -1;
             }
 
-            return obj.ToString().CompareTo(ToString());
+            return obj.ToString().AsSpan().CompareTo(ToMemory().Span, StringComparison.Ordinal);
         }
     }
 }

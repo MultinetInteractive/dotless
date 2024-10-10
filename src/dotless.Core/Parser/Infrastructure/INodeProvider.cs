@@ -24,7 +24,6 @@
         Keyword Keyword(ReadOnlyMemory<char> value, NodeLocation location);
         Number Number(ReadOnlyMemory<char> value, ReadOnlyMemory<char> unit, NodeLocation location);
         Shorthand Shorthand(Node first, Node second, NodeLocation location);
-        Variable Variable(string name, NodeLocation location);
         Variable Variable(ReadOnlyMemory<char> name, NodeLocation location);
         Url Url(Node value, IImporter importer, NodeLocation location);
         Script Script(string script, NodeLocation location);
@@ -52,7 +51,7 @@
 #endif
         Value Value(IEnumerable<Node> values, ReadOnlyMemory<char> important, NodeLocation location);
         Operation Operation(ReadOnlyMemory<char> operation, Node left, Node right, NodeLocation location);
-        Assignment Assignment(string key, Node value, NodeLocation location);
+        Assignment Assignment(ReadOnlyMemory<char> key, Node value, NodeLocation location);
 
         //text
         Comment Comment(ReadOnlyMemory<char> value, NodeLocation location);

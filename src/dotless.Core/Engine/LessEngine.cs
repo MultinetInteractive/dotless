@@ -78,10 +78,10 @@ namespace dotless.Core
 
         public string TransformToCss(string source, string fileName)
         {
-            return TransformToCss(source.AsMemory(), fileName);
+            return TransformToCss(source.AsMemory(), fileName).ToString();
         }
 
-        public string TransformToCss(ReadOnlyMemory<char> source, string fileName)
+        public ReadOnlyMemory<char> TransformToCss(ReadOnlyMemory<char> source, string fileName)
         {
             try
             {
@@ -123,7 +123,7 @@ namespace dotless.Core
                 }));
 
                 LastTransformationSuccessful = true;
-                return css.ToString();
+                return css;
             }
             catch (ParserException e)
             {
@@ -132,7 +132,7 @@ namespace dotless.Core
                 Logger.Error(e.Message);
             }
 
-            return "";
+            return ReadOnlyMemory<char>.Empty;
         }
 
         public ParserException LastTransformationError { get; set; }
