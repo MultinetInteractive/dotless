@@ -377,7 +377,7 @@ namespace dotless.Core.Parser
             return Match(tok, false);
         }
 
-        public RegexMatchResult MatchUntil(char c, bool matchUntilLastInstance = false, bool includeEndChar = false, char? charThatResetsCounter = null, bool failIfResetCharIsFound = false)
+        public RegexMatchResult MatchUntil(char c, bool matchUntilLastInstance = false, bool includeEndChar = false, char? charThatResetsCounter = null, bool failIfResetCharIsFoundBeforeEndChar = false)
         {
             if (_i == _input.Length)
             {
@@ -399,11 +399,9 @@ namespace dotless.Core.Parser
                 if (currentChar == c)
                 {
                     if (includeEndChar)
-                    {
-                        x++;
-                    }
-
-                    endLength = x;
+                        endLength = x + 1;
+                    else
+                        endLength = x;
 
                     if (!matchUntilLastInstance)
                     {
@@ -415,7 +413,7 @@ namespace dotless.Core.Parser
 
                 if (charThatResetsCounter != null && currentChar == charThatResetsCounter.Value)
                 {
-                    if(failIfResetCharIsFound)
+                    if (failIfResetCharIsFoundBeforeEndChar && endLength == 0) //no endcharFound
                     {
                         x = 0;
                         break;
