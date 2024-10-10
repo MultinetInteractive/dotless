@@ -81,7 +81,7 @@ namespace dotless.Core.Parser.Tree
             return (Rules ?? Enumerable.Empty<Node>()).OfType<Ruleset>();
         }
 
-        public List<Closure> Find<TRuleset>(Env env, Selector selector, Ruleset self) where TRuleset : Ruleset
+        public IEnumerable<Closure> Find<TRuleset>(Env env, Selector selector, Ruleset self) where TRuleset : Ruleset
         {
             var context = new Context();
             context.AppendSelectors(new Context(), Selectors ?? new NodeList<Selector>());
@@ -94,7 +94,7 @@ namespace dotless.Core.Parser.Tree
                     .Select(selectors => new Selector(selectors.SelectMany(s => s.Elements)))
                     .First();
 
-            return FindInternal(env, namespacedSelector, self, context).ToList();
+            return FindInternal(env, namespacedSelector, self, context);
         }
 
         private IEnumerable<Closure> FindInternal(Env env, Selector selector, Ruleset self, Context context)

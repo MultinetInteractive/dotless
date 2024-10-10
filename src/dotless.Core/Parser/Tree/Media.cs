@@ -134,7 +134,7 @@ namespace dotless.Core.Parser.Tree
             foreach (NodeList node in derivedPath)
             {
                 pathWithAnds.Add(node);
-                pathWithAnds.Add(new NodeList() { new TextNode("and") });
+                pathWithAnds.Add(new NodeList() { new TextNode(andMem) });
             }
 
             pathWithAnds.RemoveAt(pathWithAnds.Count - 1);
@@ -144,6 +144,13 @@ namespace dotless.Core.Parser.Tree
             // Fake a tree-node that doesn't output anything.
             return new Ruleset(new NodeList<Selector>(), new NodeList());
         }
+
+        private ReadOnlyMemory<char> andMem = "and".AsMemory();
+        private ReadOnlyMemory<char> mediaMem = "@media".AsMemory();
+        private ReadOnlyMemory<char> leftCurlyMem = "{".AsMemory();
+        private ReadOnlyMemory<char> leftCurlyMemLarge = " {\n".AsMemory();
+        private ReadOnlyMemory<char> rightCurlyMem = "}".AsMemory();
+        private ReadOnlyMemory<char> rightCurlyMemLarge = "\n}\n".AsMemory();
 
         /// <summary>
         ///  Flattens a list of nodes seperated by comma so that all the conditions are on the bottom.
@@ -243,7 +250,7 @@ namespace dotless.Core.Parser.Tree
                 return;
 
             // go ahead and output
-            env.Output.Append("@media");
+            env.Output.Append(mediaMem);
 
             if (Features)
             {
@@ -252,17 +259,17 @@ namespace dotless.Core.Parser.Tree
             }
 
             if (env.Compress)
-                env.Output.Append('{');
+                env.Output.Append(leftCurlyMem);
             else
-                env.Output.Append(" {\n");
+                env.Output.Append(leftCurlyMemLarge);
 
 
             env.Output.Append(contents);
 
             if (env.Compress)
-                env.Output.Append('}');
+                env.Output.Append(rightCurlyMem);
             else
-                env.Output.Append("\n}\n");
+                env.Output.Append(rightCurlyMemLarge);
         }
 
         public void AddExtension(Selector selector, Extend extends, Env env)
