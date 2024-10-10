@@ -53,6 +53,11 @@ namespace dotless.Core.Parser.Infrastructure.Nodes
                 return -1;
             }
 
+            if (obj is TextNode t)
+            {
+                return t.ToMemory().Span.CompareTo(ToMemory().Span, StringComparison.Ordinal);
+            }
+
             return obj.ToString().AsSpan().CompareTo(ToMemory().Span, StringComparison.Ordinal);
         }
     }
