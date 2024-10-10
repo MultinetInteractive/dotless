@@ -32,7 +32,7 @@ namespace dotless.Core.Parser.Tree
 
         public static NodeList<Selector> GetEmptySelector()
         {
-            return new NodeList<Selector>() { new Selector(new NodeList<Element>() { new Element(new Combinator(""), "&") }) };
+            return new NodeList<Selector>() { new Selector(new NodeList<Element>() { new Element(new Combinator(ReadOnlyMemory<char>.Empty), "&") }) };
         }
 
         public override void Accept(Plugins.IVisitor visitor)

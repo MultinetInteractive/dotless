@@ -747,7 +747,7 @@ namespace dotless.Core.Parser
 
                 i = parser.Tokenizer.Location.Index;
                 var match = parser.Tokenizer.Match('>');
-                c = match != null ? NodeProvider.Combinator(match.Value.ToString(), parser.Tokenizer.GetNodeLocation(index)) : null;
+                c = match != null ? NodeProvider.Combinator(match.Value, parser.Tokenizer.GetNodeLocation(index)) : null;
             }
 
             if (elements.Count == 0)
@@ -1220,11 +1220,11 @@ namespace dotless.Core.Parser
         {
             var index = parser.Tokenizer.Location.Index;
 
-            Node match;
+            TextNode match;
             if (match = parser.Tokenizer.Match('+','>','~'))
-                return NodeProvider.Combinator(match.ToString(), parser.Tokenizer.GetNodeLocation(index));
+                return NodeProvider.Combinator(match.Value, parser.Tokenizer.GetNodeLocation(index));
 
-            return NodeProvider.Combinator(char.IsWhiteSpace(parser.Tokenizer.GetPreviousCharIgnoringComments()) ? " " : null, parser.Tokenizer.GetNodeLocation(index));
+            return NodeProvider.Combinator(char.IsWhiteSpace(parser.Tokenizer.GetPreviousCharIgnoringComments()) ? " ".AsMemory() : null, parser.Tokenizer.GetNodeLocation(index));
         }
 
         //

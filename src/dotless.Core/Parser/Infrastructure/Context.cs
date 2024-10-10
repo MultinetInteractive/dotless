@@ -220,7 +220,7 @@
                     continue;
                 }
 
-                if (currentElement.Combinator.Value != "") {
+                if (!currentElement.Combinator.Value.IsEmpty) {
                     continue;
                 }
 

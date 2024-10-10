@@ -1,19 +1,19 @@
 ﻿namespace dotless.Core.Parser.Tree
 {
+    using System;
     using System.Collections.Generic;
     using Infrastructure;
     using Infrastructure.Nodes;
+    using dotless.Core.Utils;
 
     public class Combinator : Node
     {
-        public string Value { get; set; }
+        public ReadOnlyMemory<char> Value { get; set; }
 
-        public Combinator(string value)
+        public Combinator(ReadOnlyMemory<char> value)
         {
-            if (string.IsNullOrEmpty(value))
-                Value = "";
-            else if (value == " ")
-                Value = " ";
+            if (value.Length == 1 && value.Span[0] == ' ')
+                Value = value;
             else
                 Value = value.Trim();
         }
@@ -27,17 +27,21 @@
             env.Output.Append(GetValue(env));
         }
 
-        private string GetValue(Env env) {
-            switch (Value) {
-                case "+":
-                    return env.Compress ? "+" : " + ";
-                case "~":
-                    return env.Compress ? "~" : " ~ ";
-                case ">":
-                    return env.Compress ? ">" : " > ";
-                default:
-                    return Value;
+        private ReadOnlyMemory<char> GetValue(Env env) {
+            if(Value.Length == 1)
+            {
+                switch(Value.Span[0])
+                {
+                    case '+':
+                        return env.Compress ? Value : " + ".AsMemory();
+                    case '~':
+                        return env.Compress ? Value : " ~ ".AsMemory();
+                    case '>':
+                        return env.Compress ? Value : " > ".AsMemory();
+                }
             }
+
+            return Value;
         }
     }
 }

@@ -107,7 +107,7 @@ namespace dotless.Core.Parser.Tree
         {
             env.Output.Push();
 
-            if (Elements[0].Combinator.Value == "")
+            if (Elements[0].Combinator.Value.IsEmpty)
                 env.Output.Append(' ');
 
             env.Output.Append(Elements);

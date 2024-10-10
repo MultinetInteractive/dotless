@@ -13,7 +13,7 @@
             return new Element(combinator, value) { Location = location };
         }
 
-        public Combinator Combinator(string value, NodeLocation location)
+        public Combinator Combinator(ReadOnlyMemory<char> value, NodeLocation location)
         {
             return new Combinator(value) { Location = location };
         }

@@ -29,7 +29,7 @@
 
         private Element(Combinator combinator)
         {
-            Combinator = combinator ?? new Combinator("");
+            Combinator = combinator ?? new Combinator(System.ReadOnlyMemory<char>.Empty);
         }
 
         public override Node Evaluate(Env env)

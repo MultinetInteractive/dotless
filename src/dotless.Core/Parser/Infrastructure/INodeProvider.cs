@@ -9,7 +9,7 @@
     public interface INodeProvider
     {
         Element Element(Combinator combinator, Node Value, NodeLocation location);
-        Combinator Combinator(string value, NodeLocation location);
+        Combinator Combinator(ReadOnlyMemory<char> value, NodeLocation location);
         Selector Selector(NodeList<Element> elements, NodeLocation location);
         Rule Rule(ReadOnlyMemory<char> name, Node value, NodeLocation location);
         Rule Rule(ReadOnlyMemory<char> name, Node value, bool variadic, NodeLocation location);

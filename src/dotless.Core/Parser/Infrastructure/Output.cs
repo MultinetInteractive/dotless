@@ -310,5 +310,10 @@
         {
             return Builder.ToString();
         }
+
+        public ReadOnlyMemory<char> ToMemory()
+        {
+            return Builder.ToMemory();
+        }
     }
 }
