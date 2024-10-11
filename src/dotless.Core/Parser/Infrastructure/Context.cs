@@ -261,48 +261,50 @@
             for (int i = 0; i < Paths.Count; i++)
             {
                 var path = Paths[i];
+                bool doneTrimmingStart = false;
+                int startIndex = memList.Count;
 
-                var cssList = path.Select(p => p.ToCSS(env)).ToArray();
-                int firstIndexWithValue = -1;
-                int lastIndexWithValue = -1;
-
-                for (var x = 0; x < cssList.Length; x++)
+                for (int j = 0; j < path.Count; j++)
                 {
-                    if (cssList[x].Length > 0)
-                        cssList[x] = cssList[x].TrimLeft();
-                    if (cssList[x].Length > 0)
+                    var css = path[j].ToCSS(env);
+                    if (doneTrimmingStart)
                     {
-                        firstIndexWithValue = x;
+                        memList.Add(css);
+                    }
+                    else if (css.Length > 0)
+                    {
+                        css = css.TrimLeft();
+                        if (css.Length > 0)
+                        {
+                            memList.Add(css);
+                            doneTrimmingStart = true;
+                        }
+                    }
+                }
+
+                for (var y = memList.Count - 1; y >= startIndex; y--)
+                {
+                    if (memList[y].Length > 0)
+                        memList[y] = memList[y].TrimRight();
+                    if (memList[y].Length > 0)
+                    {
                         break;
                     }
+                    else //empty entry
+                    {
+                        memList.RemoveAt(y);
+                    }
                 }
 
-                for (var y = cssList.Length-1; y >= 0; y--)
+                if (memList.Count > startIndex)
                 {
-                    if (cssList[y].Length > 0)
-                        cssList[y] = cssList[y].TrimRight();
-                    if (cssList[y].Length > 0)
-                    {
-                        lastIndexWithValue = y;
-                        break;
-                    }
+                    memList.Add(env.Compress ? ",".AsMemory() : ",\n".AsMemory());
                 }
+            }
 
-                
-
-                if (firstIndexWithValue >= 0)
-                {
-                    if (i > 0)
-                    {
-                        memList.Add(env.Compress ? ",".AsMemory() : ",\n".AsMemory());
-                    }
-
-                    for (int j = firstIndexWithValue; j <= lastIndexWithValue; j++)
-                    {
-                        memList.Add(cssList[j]);
-                    }
-                }
-
+            if (memList.Count > 0)
+            {
+                memList.RemoveAt(memList.Count - 1);
             }
 
             return memList.ToMemory();
