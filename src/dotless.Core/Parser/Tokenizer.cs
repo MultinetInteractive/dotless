@@ -904,9 +904,9 @@ namespace dotless.Core.Parser
             public static ReadOnlyMemory<char> CommitAll(List<Chunk> chunks)
             {
                 MemList all = new MemList();
-                foreach(Chunk chunk in chunks)
+                foreach (Chunk chunk in chunks)
                 {
-                    if  (chunk._builder != null)
+                    if (chunk._builder != null)
                     {
                         ReadOnlyMemory<char> val = chunk._builder.ToString().AsMemory();
                         chunk._builder = null;
