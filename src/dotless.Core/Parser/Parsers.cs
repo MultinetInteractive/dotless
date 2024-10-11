@@ -40,6 +40,7 @@ namespace dotless.Core.Parser
 {
     using System.Collections.Generic;
     using System.Linq;
+    using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices.ComTypes;
     using dotless.Core.Parser.Functions;
     using Exceptions;
@@ -1442,6 +1443,8 @@ namespace dotless.Core.Parser
                 return true;
             }
 
+
+            //check if it matches format -[\w]+-{propertyname}, like '-foo-barproperty'
             int i = 0;
 
             if (i < actualPropertyName.Length && actualPropertyName.Span[0] == '-')
@@ -1460,8 +1463,6 @@ namespace dotless.Core.Parser
             }
 
             return i < actualPropertyName.Length && actualPropertyName.Slice(i).Span.Equals(expectedPropertyName, StringComparison.Ordinal);
-
-            //return Regex.IsMatch(actualPropertyName, string.Format(@"-(\w+)-{0}", expectedPropertyName));
         }
 
         private CssFunctionList FilterExpressionList(Parser parser)
@@ -1653,46 +1654,64 @@ namespace dotless.Core.Parser
             var nonVendorSpecificName = name;
             var dashIndex = 0;
 
+            bool startedWithAt = false;
             if (name.Span.StartsWith("@-".AsSpan()) && (dashIndex = name.Slice(2).Span.IndexOf('-')) > 0)
             {
                 //+3 is built up of 2 from the slice above and then we want everything after the -
-                nonVendorSpecificName = ("@" + name.Slice(dashIndex + 3).ToString()).AsMemory();
+                nonVendorSpecificName = name.Slice(dashIndex + 3);
+                startedWithAt = true;
+            }
+            else if(name.Span.StartsWith("@".AsSpan()))
+            {
+                nonVendorSpecificName = name.Slice(1);
+                startedWithAt = true;
             }
 
-            switch (nonVendorSpecificName.ToString())
+
+            if (startedWithAt)
             {
-                case "@font-face":
+                bool IsEquals(string str)
+                {
+                    return nonVendorSpecificName.Span.Equals(str.AsSpan(), StringComparison.Ordinal);
+                }
+
+                if (
+                    IsEquals("font-face") ||
+                    IsEquals("viewport") ||
+                    IsEquals("top-left") ||
+                    IsEquals("top-left-corner") ||
+                    IsEquals("top-center") ||
+                    IsEquals("top-right") ||
+                    IsEquals("top-right-corner") ||
+                    IsEquals("bottom-left") ||
+                    IsEquals("bottom-left-corner") ||
+                    IsEquals("bottom-center") ||
+                    IsEquals("bottom-right") ||
+                    IsEquals("bottom-right-corner") ||
+                    IsEquals("left-top") ||
+                    IsEquals("left-middle") ||
+                    IsEquals("left-bottom") ||
+                    IsEquals("right-top") ||
+                    IsEquals("right-middle") ||
+                    IsEquals("right-bottom")
+                    )
+                {
                     hasBlock = true;
-                    break;
-                case "@page":
-                case "@document":
-                case "@supports":
+                }
+                else if (
+                    IsEquals("page") ||
+                    IsEquals("document") ||
+                    IsEquals("supports")
+                    )
+                {
                     hasBlock = true;
                     hasIdentifier = true;
-                    break;
-                case "@viewport":
-                case "@top-left":
-                case "@top-left-corner":
-                case "@top-center":
-                case "@top-right":
-                case "@top-right-corner":
-                case "@bottom-left":
-                case "@bottom-left-corner":
-                case "@bottom-center":
-                case "@bottom-right":
-                case "@bottom-right-corner":
-                case "@left-top":
-                case "@left-middle":
-                case "@left-bottom":
-                case "@right-top":
-                case "@right-middle":
-                case "@right-bottom":
-                    hasBlock = true;
-                    break;
-                case "@keyframes":
+                }
+                else if (IsEquals("keyframes"))
+                {
                     isKeyFrame = true;
                     hasIdentifier = true;
-                    break;
+                }
             }
 
             ReadOnlyMemory<char> identifier = ReadOnlyMemory<char>.Empty;
