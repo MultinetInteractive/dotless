@@ -254,7 +254,7 @@ namespace dotless.Core.Parser.Tree
 
             if (Features)
             {
-                env.Output.Append(' ');
+                env.Output.Append(" ");
                 env.Output.Append(Features);
             }
 

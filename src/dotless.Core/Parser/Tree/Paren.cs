@@ -20,9 +20,9 @@
         public override void AppendCSS(Env env)
         {
             env.Output
-                .Append('(')
+                .Append("(")
                 .Append(Value)
-                .Append(')');
+                .Append(")");
         }
 
         public override Node Evaluate(Env env)

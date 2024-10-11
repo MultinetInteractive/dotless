@@ -44,7 +44,10 @@
 
         public void Reset(string s)
         {
-            Builder = new MemList() { s.AsMemory() };
+            if (!string.IsNullOrEmpty(s))
+                Builder = new MemList() { s.AsMemory() };
+            else
+                Builder = new MemList();
 
             BuilderStack.Pop();
             BuilderStack.Push(Builder);
@@ -73,24 +76,20 @@
 
         public Output Append(string s)
         {
-            Builder.Add(s.AsMemory());
-
+            if (!string.IsNullOrEmpty(s))
+            {
+                Builder.Add(s.AsMemory());
+            }
             return this;
         }
 
         public Output Append(ReadOnlyMemory<char> s)
         {
-            Builder.Add(s);
-
-            return this;
-        }
-
-        public Output Append(char? s)
-        {
-            if (s.HasValue)
+            if (!s.IsEmpty)
             {
-                Builder.Add(new ReadOnlyMemory<char>(new[] { s.Value }));
+                Builder.Add(s);
             }
+
             return this;
         }
 
