@@ -450,8 +450,12 @@ namespace dotless.Core.Parser
                     return null;
                 }
 
+                var varName = new Memory<char>(new char[variableName.Value.Length + 1]);
+                varName.Span[0] = '@';
+                variableName.Value.CopyTo(varName.Slice(1));
+
                 parser.Tokenizer.Advance(1);
-                return NodeProvider.Variable(("@" + variableName.Value.ToString()).AsMemory(), parser.Tokenizer.GetNodeLocation(index));
+                return NodeProvider.Variable(varName, parser.Tokenizer.GetNodeLocation(index));
             }
 
             return null;
@@ -656,23 +660,7 @@ namespace dotless.Core.Parser
                 return null;
             }
 
-            return NodeProvider.Script(script.Value.ToString(), parser.Tokenizer.GetNodeLocation(index));
-        }
-
-
-        //
-        // The variable part of a variable definition. Used in the `rule` parser
-        //
-        //     @fink:
-        //
-        public string VariableName(Parser parser)
-        {
-            var variable = Variable(parser);
-
-            if (variable != null)
-                return variable.Name.ToString();
-
-            return null;
+            return NodeProvider.Script(script.Value, parser.Tokenizer.GetNodeLocation(index));
         }
 
         //
@@ -765,7 +753,7 @@ namespace dotless.Core.Parser
                 const string balancedParenthesesRegex = @"\([^()]*(?>(?>(?'open'\()[^()]*)*(?>(?'-open'\))[^()]*)*)+(?(open)(?!))\)";
 
                 var argumentList = parser.Tokenizer.Match(balancedParenthesesRegex);
-                bool argumentListIsSemicolonSeparated = argumentList != null && argumentList.Value.ToString().Contains(';');
+                bool argumentListIsSemicolonSeparated = argumentList != null && argumentList.Value.Span.IndexOf(';') >= 0;
 
                 char expectedSeparator = argumentListIsSemicolonSeparated ? ';' : ',';
 

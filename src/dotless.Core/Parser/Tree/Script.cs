@@ -6,9 +6,9 @@
 
     public class Script : Node
     {
-        public string Expression { get; set; }
+        public ReadOnlyMemory<char> Expression { get; set; }
 
-        public Script(string script)
+        public Script(ReadOnlyMemory<char> script)
         {
             Expression = script;
         }
