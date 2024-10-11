@@ -1390,7 +1390,7 @@ namespace dotless.Core.Parser
                 {
                     value = Font(parser);
                 }
-                else if (MatchesProperty("filter", name.ToString()))
+                else if (MatchesProperty("filter".AsSpan(), name))
                 {
                     value = FilterExpressionList(parser) || Value(parser);
                 }
@@ -1435,14 +1435,33 @@ namespace dotless.Core.Parser
             return null;
         }
 
-        private bool MatchesProperty(string expectedPropertyName, string actualPropertyName)
+        private bool MatchesProperty(ReadOnlySpan<char> expectedPropertyName, ReadOnlyMemory<char> actualPropertyName)
         {
-            if (string.Equals(expectedPropertyName, actualPropertyName))
+            if (expectedPropertyName.Equals(actualPropertyName.Span, StringComparison.Ordinal))
             {
                 return true;
             }
 
-            return Regex.IsMatch(actualPropertyName, string.Format(@"-(\w+)-{0}", expectedPropertyName));
+            int i = 0;
+
+            if (i < actualPropertyName.Length && actualPropertyName.Span[0] == '-')
+            {
+                i++;
+            }
+
+            while(i < actualPropertyName.Length && (char.IsLetterOrDigit(actualPropertyName.Span[i]) || char.IsLetterOrDigit('_')))
+            {
+                i++;
+            }
+
+            if(i < actualPropertyName.Length && actualPropertyName.Span[0] == '-')
+            {
+                i++;
+            }
+
+            return i < actualPropertyName.Length && actualPropertyName.Slice(i).Span.Equals(expectedPropertyName, StringComparison.Ordinal);
+
+            //return Regex.IsMatch(actualPropertyName, string.Format(@"-(\w+)-{0}", expectedPropertyName));
         }
 
         private CssFunctionList FilterExpressionList(Parser parser)
