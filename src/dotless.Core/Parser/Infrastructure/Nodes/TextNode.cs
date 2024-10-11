@@ -7,11 +7,6 @@ namespace dotless.Core.Parser.Infrastructure.Nodes
     {
         public ReadOnlyMemory<char> Value { get; set; }
 
-        public TextNode(string contents)
-        {
-            Value = contents.AsMemory();
-        }
-
         public TextNode(ReadOnlyMemory<char> contents)
         {
             Value = contents;

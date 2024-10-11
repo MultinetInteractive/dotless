@@ -14,9 +14,9 @@
             WarnNotSupportedByLessJS("formatstring(string, args...)", null, @" You may want to consider using string interpolation (""@{variable}"") which does the same thing and is supported.");
 
             if (Arguments.Count == 0)
-                return new Quoted("", false);
+                return new Quoted(ReadOnlyMemory<char>.Empty, ReadOnlyMemory<char>.Empty, false);
 
-            Func<Node, string> unescape = n => n is Quoted ? ((Quoted) n).UnescapeContents().ToString() : n.ToCSS(env).ToString();
+            Func<Node, string> unescape = n => n is Quoted ? ((Quoted) n).unescapeContentsMem().ToString() : n.ToCSS(env).ToString();
 
             var format = unescape(Arguments[0]);
 
@@ -33,7 +33,7 @@
                 throw new ParserException(string.Format("Error in formatString :{0}", e.Message), e);
             }
 
-            return new Quoted(result, false);
+            return new Quoted(result.AsMemory(), false);
         }
     }
 }

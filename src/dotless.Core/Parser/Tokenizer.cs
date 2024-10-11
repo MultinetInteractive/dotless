@@ -76,10 +76,13 @@ namespace dotless.Core.Parser
                     if (_input.Span[i] == '@')
                     {
                         match = skip.Match(_input.ToString(), i);
+
                         if (match.Success)
                         {
-                            Chunk.Append(match.Value.AsMemory(), _chunks);
                             i += match.Length;
+
+                            Chunk.Append(match.Value.AsMemory(), _chunks);
+                            
                             continue;
                         }
                     }
@@ -510,11 +513,46 @@ namespace dotless.Core.Parser
             }
         }
 
+        public RegexMatchResult MatchWord()
+        {
+            if (_i == _inputLength || _chunks[_j].Type != ChunkType.Text)
+            {
+                return null;
+            }
+
+            var startingPosition = _i - _current;
+
+            var x = 0;
+            var requiredLength = 0;
+
+            char Current()
+            {
+                return _chunks[_j].Value.Span[startingPosition + x];
+            }
+
+            while (_chunks[_j].Value.Length > (startingPosition + x) && (char.IsLetterOrDigit(Current()) || Current() == '_'))
+            {
+                x++;
+            }
+
+            if (x > requiredLength)
+            {
+                var res = new RegexMatchResult(_chunks[_j].Value.Slice(startingPosition, x), GetNodeLocation(startingPosition));
+                Advance(x);
+
+                return res;
+            }
+            else //nothing
+            {
+                return null;
+            }
+        }
+
         public RegexMatchResult MatchIdentifier()
         {
             return MatchKeyword(requireStartingAt: true);
         }
-        public RegexMatchResult MatchKeyword(bool requireStartingAt = false, bool allowLeadingDigit = true)
+        public RegexMatchResult MatchKeyword(bool requireStartingAt = false, bool allowLeadingDigit = true, bool allowSlashDot = false)
         {
             if (_i == _inputLength || _chunks[_j].Type != ChunkType.Text)
             {
@@ -551,9 +589,13 @@ namespace dotless.Core.Parser
                     return null;
             }
 
-            while (_chunks[_j].Value.Length > (startingPosition + x) && (char.IsLetterOrDigit(Current()) || Current() == '_' || Current() == '-'))
+            while (_chunks[_j].Value.Length > (startingPosition + x) && (char.IsLetterOrDigit(Current()) || Current() == '_' || Current() == '-' || (allowSlashDot && Current() == '\\')))
             {
                 x++;
+                if (allowSlashDot && _chunks[_j].Value.Length > (startingPosition + x) && Current() == '.')
+                {
+                    x++;
+                }
             }
 
             if (x > requiredLength)

@@ -40,6 +40,7 @@ namespace dotless.Core.Parser
 {
     using System.Collections.Generic;
     using System.Linq;
+    using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices.ComTypes;
     using dotless.Core.Parser.Functions;
     using Exceptions;
@@ -322,10 +323,12 @@ namespace dotless.Core.Parser
         //
         public Assignment Assignment(Parser parser)
         {
-            var key = parser.Tokenizer.Match(@"\w+(?=\s?=)");
+            var memo = Remember(parser);
+            var key = parser.Tokenizer.MatchWord();
 
             if (!key || !parser.Tokenizer.Match('='))
             {
+                Recall(parser, memo);
                 return null;
             }
 
@@ -382,7 +385,7 @@ namespace dotless.Core.Parser
 
             if (!value)
             {
-                value = parser.Tokenizer.MatchAny(@"[^\)""']*") || new TextNode("");
+                value = parser.Tokenizer.MatchAny(@"[^\)""']*") || new TextNode(ReadOnlyMemory<char>.Empty);
             }
 
             Expect(parser, ')');
@@ -447,8 +450,12 @@ namespace dotless.Core.Parser
                     return null;
                 }
 
+                var varName = new Memory<char>(new char[variableName.Value.Length + 1]);
+                varName.Span[0] = '@';
+                variableName.Value.CopyTo(varName.Slice(1));
+
                 parser.Tokenizer.Advance(1);
-                return NodeProvider.Variable(("@" + variableName.Value.ToString()).AsMemory(), parser.Tokenizer.GetNodeLocation(index));
+                return NodeProvider.Variable(varName, parser.Tokenizer.GetNodeLocation(index));
             }
 
             return null;
@@ -653,23 +660,7 @@ namespace dotless.Core.Parser
                 return null;
             }
 
-            return NodeProvider.Script(script.Value.ToString(), parser.Tokenizer.GetNodeLocation(index));
-        }
-
-
-        //
-        // The variable part of a variable definition. Used in the `rule` parser
-        //
-        //     @fink:
-        //
-        public string VariableName(Parser parser)
-        {
-            var variable = Variable(parser);
-
-            if (variable != null)
-                return variable.Name.ToString();
-
-            return null;
+            return NodeProvider.Script(script.Value, parser.Tokenizer.GetNodeLocation(index));
         }
 
         //
@@ -762,7 +753,7 @@ namespace dotless.Core.Parser
                 const string balancedParenthesesRegex = @"\([^()]*(?>(?>(?'open'\()[^()]*)*(?>(?'-open'\))[^()]*)*)+(?(open)(?!))\)";
 
                 var argumentList = parser.Tokenizer.Match(balancedParenthesesRegex);
-                bool argumentListIsSemicolonSeparated = argumentList != null && argumentList.Value.ToString().Contains(';');
+                bool argumentListIsSemicolonSeparated = argumentList != null && argumentList.Value.Span.IndexOf(';') >= 0;
 
                 char expectedSeparator = argumentListIsSemicolonSeparated ? ';' : ',';
 
@@ -1291,7 +1282,7 @@ namespace dotless.Core.Parser
             if (!parser.Tokenizer.Match('['))
                 return null;
 
-            Node key = InterpolatedVariable(parser) || parser.Tokenizer.Match(@"(\\.|[a-z0-9_-])+", true) || Quoted(parser);
+            Node key = InterpolatedVariable(parser) || parser.Tokenizer.MatchKeyword(allowSlashDot: true) || Quoted(parser);
 
             if (!key)
             {
@@ -1299,7 +1290,7 @@ namespace dotless.Core.Parser
             }
 
             Node op = parser.Tokenizer.Match(@"[|~*$^]?=");
-            Node val = Quoted(parser) || parser.Tokenizer.Match(@"[\w-]+");
+            Node val = Quoted(parser) || parser.Tokenizer.MatchKeyword();
 
             Expect(parser, ']');
 
@@ -1388,7 +1379,7 @@ namespace dotless.Core.Parser
                 {
                     value = Font(parser);
                 }
-                else if (MatchesProperty("filter", name.ToString()))
+                else if (MatchesProperty("filter".AsSpan(), name))
                 {
                     value = FilterExpressionList(parser) || Value(parser);
                 }
@@ -1433,14 +1424,33 @@ namespace dotless.Core.Parser
             return null;
         }
 
-        private bool MatchesProperty(string expectedPropertyName, string actualPropertyName)
+        private bool MatchesProperty(ReadOnlySpan<char> expectedPropertyName, ReadOnlyMemory<char> actualPropertyName)
         {
-            if (string.Equals(expectedPropertyName, actualPropertyName))
+            if (expectedPropertyName.Equals(actualPropertyName.Span, StringComparison.Ordinal))
             {
                 return true;
             }
 
-            return Regex.IsMatch(actualPropertyName, string.Format(@"-(\w+)-{0}", expectedPropertyName));
+
+            //check if it matches format -[\w]+-{propertyname}, like '-foo-barproperty'
+            int i = 0;
+
+            if (i < actualPropertyName.Length && actualPropertyName.Span[0] == '-')
+            {
+                i++;
+            }
+
+            while(i < actualPropertyName.Length && (char.IsLetterOrDigit(actualPropertyName.Span[i]) || char.IsLetterOrDigit('_')))
+            {
+                i++;
+            }
+
+            if(i < actualPropertyName.Length && actualPropertyName.Span[0] == '-')
+            {
+                i++;
+            }
+
+            return i < actualPropertyName.Length && actualPropertyName.Slice(i).Span.Equals(expectedPropertyName, StringComparison.Ordinal);
         }
 
         private CssFunctionList FilterExpressionList(Parser parser)

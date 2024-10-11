@@ -18,11 +18,11 @@
             WarnNotSupportedByLessJS("e(string)", @"~""""");
 
             if (Arguments.Count == 0)
-                return new TextNode("");
+                return new TextNode(ReadOnlyMemory<char>.Empty);
 
             var str = Arguments[0];
             if (str is Quoted)
-                return new TextNode((str as Quoted).UnescapeContents());
+                return new TextNode((str as Quoted).unescapeContentsMem());
 
             return new TextNode(str.ToCSS(env));
         }
@@ -35,7 +35,7 @@
             WarnNotSupportedByLessJS("%(string, args...)", @"~"""" and string interpolation");
 
             if (Arguments.Count == 0)
-                return new Quoted("", false);
+                return new Quoted(ReadOnlyMemory<char>.Empty, false);
 
             Func<Node, ReadOnlyMemory<char>> stringValue = n => n is Quoted ? ((Quoted)n).Value : n.ToCSS(env);
 

@@ -1,5 +1,6 @@
-namespace dotless.Core.Parser.Functions
+﻿namespace dotless.Core.Parser.Functions
 {
+    using System;
     using Infrastructure;
     using Infrastructure.Nodes;
     using Tree;
@@ -12,7 +13,7 @@ namespace dotless.Core.Parser.Functions
             Guard.ExpectNumArguments(1, Arguments.Count, this, Location);
             var color = Guard.ExpectNode<Color>(Arguments[0], this, Location);
 
-            return new TextNode(color.ToArgb());
+            return new TextNode(color.ToArgb().AsMemory());
         }
     }
 }

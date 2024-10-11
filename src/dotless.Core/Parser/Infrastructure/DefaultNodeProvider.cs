@@ -85,7 +85,7 @@
             return new Url(value, importer) { Location = location };
         }
 
-        public Script Script(string script, NodeLocation location)
+        public Script Script(ReadOnlyMemory<char> script, NodeLocation location)
         {
             return new Script(script) { Location = location };
         }

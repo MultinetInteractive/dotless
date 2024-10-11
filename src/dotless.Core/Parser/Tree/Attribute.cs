@@ -25,10 +25,27 @@ namespace dotless.Core.Parser.Tree {
 
         public override Node Evaluate(Env env)
         {
-            return new TextNode(string.Format("[{0}{1}{2}]", 
-                Name.Evaluate(env).ToCSS(env),
-                Op == null ? ReadOnlyMemory<char>.Empty : Op.Evaluate(env).ToCSS(env), 
-                Value == null ? ReadOnlyMemory<char>.Empty :  Value.Evaluate(env).ToCSS(env)));
+            var nameMem = Name.Evaluate(env).ToCSS(env);
+            var opMem = Op == null ? ReadOnlyMemory<char>.Empty : Op.Evaluate(env).ToCSS(env);
+            var valueMem = Value == null ? ReadOnlyMemory<char>.Empty : Value.Evaluate(env).ToCSS(env);
+
+
+            var buf = new Memory<char>(new char[nameMem.Length + opMem.Length + valueMem.Length + 2]);
+            buf.Span[0] = '[';
+            var writeBuf = buf.Slice(1);
+            
+            nameMem.CopyTo(writeBuf);
+            writeBuf = writeBuf.Slice(nameMem.Length);
+
+            opMem.CopyTo(writeBuf);
+            writeBuf = writeBuf.Slice(opMem.Length);
+
+            valueMem.CopyTo(writeBuf);
+            writeBuf = writeBuf.Slice(valueMem.Length);
+
+            writeBuf.Span[0] = ']';
+
+            return new TextNode(buf);
         }
     }
 }
