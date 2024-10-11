@@ -158,13 +158,13 @@
                         {
                             if (rule.Name.Span.IndexOf("right".AsSpan(), StringComparison.InvariantCultureIgnoreCase) >= 0)
                             {
-                                rule.Name = Replace(rule.Name.ToString(), "right", "left", StringComparison.InvariantCultureIgnoreCase).AsMemory();
+                                rule.Name = Replace(rule.Name, "right".AsMemory(), "left".AsMemory(), StringComparison.InvariantCultureIgnoreCase);
                                 return rule;
                             }
 
                             if (rule.Name.Span.IndexOf("left".AsSpan(), StringComparison.InvariantCultureIgnoreCase) >= 0)
                             {
-                                rule.Name = Replace(rule.Name.ToString(), "left", "right", StringComparison.InvariantCultureIgnoreCase).AsMemory();
+                                rule.Name = Replace(rule.Name, "left".AsMemory(), "right".AsMemory(), StringComparison.InvariantCultureIgnoreCase);
                                 return rule;
                             }
 
@@ -188,14 +188,25 @@
             return node;
         }
 
-        private string Replace(string haystack, string needle, string replacement, StringComparison comparisonType)
+        private ReadOnlyMemory<char> Replace(ReadOnlyMemory<char> haystack, ReadOnlyMemory<char> needle, ReadOnlyMemory<char> replacement, StringComparison comparisonType)
         {
-            int index = haystack.IndexOf(needle, comparisonType);
+            int index = haystack.Span.IndexOf(needle.Span, comparisonType);
             if (index < 0)
             {
                 return haystack;
             }
-            return haystack.Substring(0, index) + replacement + haystack.Substring(index + needle.Length);
+
+            var buf = new Memory<char>(new char[haystack.Length - needle.Length + replacement.Length]);
+
+            haystack.Slice(0, index).CopyTo(buf);
+            int writeIndex = index;
+            
+            replacement.CopyTo(buf.Slice(writeIndex));
+            writeIndex += replacement.Length;
+            
+            haystack.Slice(index + needle.Length).CopyTo(buf.Slice(writeIndex));
+
+            return buf;
 
         }
 
