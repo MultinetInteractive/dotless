@@ -75,14 +75,13 @@ namespace dotless.Core.Parser
                     Match match;
                     if (_input.Span[i] == '@')
                     {
-                        match = skip.Match(_input.Slice(i).ToString());
+                        match = skip.Match(_input.ToString(), i);
 
                         if (match.Success)
                         {
-                            var skipValue = _input.Slice(i, match.Length);
                             i += match.Length;
 
-                            Chunk.Append(skipValue, _chunks);
+                            Chunk.Append(match.Value.AsMemory(), _chunks);
                             
                             continue;
                         }
@@ -95,12 +94,11 @@ namespace dotless.Core.Parser
                         var cc = _input.Span[i + 1];
                         if ((!inParam && cc == '/') || cc == '*')
                         {
-                            match = comment.Match(_input.Slice(i).ToString());
+                            match = comment.Match(_input.ToString(), i);
                             if(match.Success)
                             {
-                                var commentValue = _input.Slice(i, match.Length);
                                 i += match.Length;
-                                _chunks.Add(new Chunk(commentValue, ChunkType.Comment));
+                                _chunks.Add(new Chunk(match.Value.AsMemory(), ChunkType.Comment));
                                 continue;
                             } else
                             {
@@ -111,12 +109,11 @@ namespace dotless.Core.Parser
                     
                     if(c == '"' || c == '\'')
                     {
-                        match = quotedstring.Match(_input.Slice(i).ToString());
+                        match = quotedstring.Match(_input.ToString(), i);
                         if(match.Success)
                         {
-                            var quotedValue = _input.Slice(i, match.Length);
                             i += match.Length;
-                            _chunks.Add(new Chunk(quotedValue, ChunkType.QuotedString));
+                            _chunks.Add(new Chunk(match.Value.AsMemory(), ChunkType.QuotedString));
                             continue;
                         } else
                         {
@@ -949,18 +946,18 @@ namespace dotless.Core.Parser
             public static ReadOnlyMemory<char> CommitAll(List<Chunk> chunks)
             {
                 MemList all = new MemList();
-                foreach(Chunk chunk in chunks)
+                foreach (Chunk chunk in chunks)
                 {
-                    if  (chunk._builder != null)
+                    if (chunk._builder != null)
                     {
-                        ReadOnlyMemory<char> val = chunk._builder.ToMemory();
+                        ReadOnlyMemory<char> val = chunk._builder.ToString().AsMemory();
                         chunk._builder = null;
                         chunk.Value = val;
                     }
 
                     all.Add(chunk.Value);
                 }
-                return all.ToMemory();
+                return all.ToString().AsMemory();
             }
         }
 
