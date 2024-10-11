@@ -953,14 +953,14 @@ namespace dotless.Core.Parser
                 {
                     if  (chunk._builder != null)
                     {
-                        ReadOnlyMemory<char> val = chunk._builder.ToString().AsMemory();
+                        ReadOnlyMemory<char> val = chunk._builder.ToMemory();
                         chunk._builder = null;
                         chunk.Value = val;
                     }
 
                     all.Add(chunk.Value);
                 }
-                return all.ToString().AsMemory();
+                return all.ToMemory();
             }
         }
 

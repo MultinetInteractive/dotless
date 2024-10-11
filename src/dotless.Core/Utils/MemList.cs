@@ -19,11 +19,11 @@ namespace dotless.Core.Utils
 
             var length = this.Sum(p => p.Length);
             var bufArr = ArrayPool<char>.Shared.Rent(length);
-            Span<char> buffer = new Span<char>(bufArr, 0, length);
+            Memory<char> buffer = new Memory<char>(bufArr, 0, length);
             int currentPos = 0;
             foreach (var token in this)
             {
-                token.Span.CopyTo(buffer.Slice(currentPos, token.Length));
+                token.CopyTo(buffer.Slice(currentPos, token.Length));
                 currentPos += token.Length;
             }
 
@@ -42,14 +42,13 @@ namespace dotless.Core.Utils
             int currentPos = 0;
             foreach (var token in this)
             {
-                token.Span.CopyTo(buffer.Span.Slice(currentPos, token.Length));
+                token.CopyTo(buffer.Slice(currentPos, token.Length));
                 currentPos += token.Length;
             }
 
             return buffer;
         }
     }
-
 
     public class MemListComparer : IEqualityComparer<MemList>
     {
