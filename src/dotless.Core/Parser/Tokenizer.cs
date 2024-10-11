@@ -57,7 +57,9 @@ namespace dotless.Core.Parser
             // delmited by '\n}' (see rationale above),
             // depending on the level of optimization.
 
-            if(Optimization == 0)
+            var inputString = _input.ToString();
+
+            if (Optimization == 0)
                 _chunks.Add(new Chunk(_input));
             else
             {
@@ -75,7 +77,7 @@ namespace dotless.Core.Parser
                     Match match;
                     if (_input.Span[i] == '@')
                     {
-                        match = skip.Match(_input.ToString(), i);
+                        match = skip.Match(inputString, i);
 
                         if (match.Success)
                         {
@@ -94,7 +96,7 @@ namespace dotless.Core.Parser
                         var cc = _input.Span[i + 1];
                         if ((!inParam && cc == '/') || cc == '*')
                         {
-                            match = comment.Match(_input.ToString(), i);
+                            match = comment.Match(inputString, i);
                             if(match.Success)
                             {
                                 i += match.Length;
@@ -109,7 +111,7 @@ namespace dotless.Core.Parser
                     
                     if(c == '"' || c == '\'')
                     {
-                        match = quotedstring.Match(_input.ToString(), i);
+                        match = quotedstring.Match(inputString, i);
                         if(match.Success)
                         {
                             i += match.Length;
@@ -382,6 +384,11 @@ namespace dotless.Core.Parser
 
         public RegexMatchResult MatchUntil(char c, bool matchUntilLastInstance = false, bool includeEndChar = false, char? charThatResetsCounter = null, bool failIfResetCharIsFoundBeforeEndChar = false)
         {
+            return MatchUntil(new[] { c}, matchUntilLastInstance, includeEndChar, charThatResetsCounter, failIfResetCharIsFoundBeforeEndChar);
+        }
+
+        public RegexMatchResult MatchUntil(char[] c, bool matchUntilLastInstance = false, bool includeEndChar = false, char? charThatResetsCounter = null, bool failIfResetCharIsFoundBeforeEndChar = false)
+        {
             if (_i == _input.Length)
             {
                 return null;
@@ -399,7 +406,7 @@ namespace dotless.Core.Parser
             while (startingPosition + x < _input.Length)
             {
                 var currentChar = _input.Span[startingPosition + x];
-                if (currentChar == c)
+                if (c.Contains(currentChar))
                 {
                     if (includeEndChar)
                         endLength = x + 1;
@@ -441,7 +448,7 @@ namespace dotless.Core.Parser
 
                 return res;
             }
-            
+
             return null;
         }
 

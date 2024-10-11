@@ -1797,7 +1797,7 @@ namespace dotless.Core.Parser
                         Recall(parser, memo);
 
                         // match "3/2" for instance
-                        var unrecognised = parser.Tokenizer.Match(@"[^\){]+");
+                        var unrecognised = parser.Tokenizer.MatchUntil(new[] { ')', '{' });
                         if (unrecognised)
                         {
                             entity = NodeProvider.TextNode(unrecognised.Value, parser.Tokenizer.GetNodeLocation());
