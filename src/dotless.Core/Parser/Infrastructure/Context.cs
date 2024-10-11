@@ -225,11 +225,7 @@
                     continue;
                 }
 
-                var buf = new Memory<char>(new char[previousElement.Value.Length + currentElement.Value.Length]);
-                previousElement.Value.CopyTo(buf);
-                currentElement.Value.CopyTo(buf.Slice(previousElement.Value.Length));
-
-                previousElement.Value = buf;
+                previousElement.Value = (previousElement.Value.ToString() + currentElement.Value.ToString()).AsMemory();
 
                 elements[i - 1] = new Element(previousElement.Combinator, previousElement.Value);
                 elements.RemoveAt(i);

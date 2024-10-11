@@ -26,7 +26,7 @@
         Shorthand Shorthand(Node first, Node second, NodeLocation location);
         Variable Variable(ReadOnlyMemory<char> name, NodeLocation location);
         Url Url(Node value, IImporter importer, NodeLocation location);
-        Script Script(ReadOnlyMemory<char> script, NodeLocation location);
+        Script Script(string script, NodeLocation location);
         Paren Paren(Node node, NodeLocation location);
 
         GuardedRuleset GuardedRuleset(NodeList<Selector> selectors, NodeList rules, Condition condition, NodeLocation location);

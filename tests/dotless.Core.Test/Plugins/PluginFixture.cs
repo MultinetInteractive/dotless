@@ -28,7 +28,7 @@ namespace dotless.Core.Test.Plugins
 
     public class TestFunction : Function {
         protected override Node Evaluate(Env env) {
-            return new Quoted("test".AsMemory(), true);
+            return new Quoted("test", true);
         }
     }
 

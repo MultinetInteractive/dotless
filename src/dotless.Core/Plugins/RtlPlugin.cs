@@ -158,13 +158,13 @@
                         {
                             if (rule.Name.Span.IndexOf("right".AsSpan(), StringComparison.InvariantCultureIgnoreCase) >= 0)
                             {
-                                rule.Name = Replace(rule.Name, "right".AsMemory(), "left".AsMemory(), StringComparison.InvariantCultureIgnoreCase);
+                                rule.Name = Replace(rule.Name.ToString(), "right", "left", StringComparison.InvariantCultureIgnoreCase).AsMemory();
                                 return rule;
                             }
 
                             if (rule.Name.Span.IndexOf("left".AsSpan(), StringComparison.InvariantCultureIgnoreCase) >= 0)
                             {
-                                rule.Name = Replace(rule.Name, "left".AsMemory(), "right".AsMemory(), StringComparison.InvariantCultureIgnoreCase);
+                                rule.Name = Replace(rule.Name.ToString(), "left", "right", StringComparison.InvariantCultureIgnoreCase).AsMemory();
                                 return rule;
                             }
 
@@ -188,25 +188,14 @@
             return node;
         }
 
-        private ReadOnlyMemory<char> Replace(ReadOnlyMemory<char> haystack, ReadOnlyMemory<char> needle, ReadOnlyMemory<char> replacement, StringComparison comparisonType)
+        private string Replace(string haystack, string needle, string replacement, StringComparison comparisonType)
         {
-            int index = haystack.Span.IndexOf(needle.Span, comparisonType);
+            int index = haystack.IndexOf(needle, comparisonType);
             if (index < 0)
             {
                 return haystack;
             }
-
-            var buf = new Memory<char>(new char[haystack.Length - needle.Length + replacement.Length]);
-
-            haystack.Slice(0, index).CopyTo(buf);
-            int writeIndex = index;
-            
-            replacement.CopyTo(buf.Slice(writeIndex));
-            writeIndex += replacement.Length;
-            
-            haystack.Slice(index + needle.Length).CopyTo(buf.Slice(writeIndex));
-
-            return buf;
+            return haystack.Substring(0, index) + replacement + haystack.Substring(index + needle.Length);
 
         }
 
@@ -279,7 +268,7 @@
             
                     if (valueChanged)
                     {
-                        return new Rule(rule.Name, new TextNode(content.AsMemory())).ReducedFrom<Rule>(rule);
+                        return new Rule(rule.Name, new TextNode(content)).ReducedFrom<Rule>(rule);
                     }
                 }
 

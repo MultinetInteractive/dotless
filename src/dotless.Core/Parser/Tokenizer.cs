@@ -75,15 +75,11 @@ namespace dotless.Core.Parser
                     Match match;
                     if (_input.Span[i] == '@')
                     {
-                        match = skip.Match(_input.Slice(i).ToString());
-
+                        match = skip.Match(_input.ToString(), i);
                         if (match.Success)
                         {
-                            var skipValue = _input.Slice(i, match.Length);
+                            Chunk.Append(match.Value.AsMemory(), _chunks);
                             i += match.Length;
-
-                            Chunk.Append(skipValue, _chunks);
-                            
                             continue;
                         }
                     }
@@ -95,12 +91,11 @@ namespace dotless.Core.Parser
                         var cc = _input.Span[i + 1];
                         if ((!inParam && cc == '/') || cc == '*')
                         {
-                            match = comment.Match(_input.Slice(i).ToString());
+                            match = comment.Match(_input.ToString(), i);
                             if(match.Success)
                             {
-                                var commentValue = _input.Slice(i, match.Length);
                                 i += match.Length;
-                                _chunks.Add(new Chunk(commentValue, ChunkType.Comment));
+                                _chunks.Add(new Chunk(match.Value.AsMemory(), ChunkType.Comment));
                                 continue;
                             } else
                             {
@@ -111,12 +106,11 @@ namespace dotless.Core.Parser
                     
                     if(c == '"' || c == '\'')
                     {
-                        match = quotedstring.Match(_input.Slice(i).ToString());
+                        match = quotedstring.Match(_input.ToString(), i);
                         if(match.Success)
                         {
-                            var quotedValue = _input.Slice(i, match.Length);
                             i += match.Length;
-                            _chunks.Add(new Chunk(quotedValue, ChunkType.QuotedString));
+                            _chunks.Add(new Chunk(match.Value.AsMemory(), ChunkType.QuotedString));
                             continue;
                         } else
                         {
@@ -516,46 +510,11 @@ namespace dotless.Core.Parser
             }
         }
 
-        public RegexMatchResult MatchWord()
-        {
-            if (_i == _inputLength || _chunks[_j].Type != ChunkType.Text)
-            {
-                return null;
-            }
-
-            var startingPosition = _i - _current;
-
-            var x = 0;
-            var requiredLength = 0;
-
-            char Current()
-            {
-                return _chunks[_j].Value.Span[startingPosition + x];
-            }
-
-            while (_chunks[_j].Value.Length > (startingPosition + x) && (char.IsLetterOrDigit(Current()) || Current() == '_'))
-            {
-                x++;
-            }
-
-            if (x > requiredLength)
-            {
-                var res = new RegexMatchResult(_chunks[_j].Value.Slice(startingPosition, x), GetNodeLocation(startingPosition));
-                Advance(x);
-
-                return res;
-            }
-            else //nothing
-            {
-                return null;
-            }
-        }
-
         public RegexMatchResult MatchIdentifier()
         {
             return MatchKeyword(requireStartingAt: true);
         }
-        public RegexMatchResult MatchKeyword(bool requireStartingAt = false, bool allowLeadingDigit = true, bool allowSlashDot = false)
+        public RegexMatchResult MatchKeyword(bool requireStartingAt = false, bool allowLeadingDigit = true)
         {
             if (_i == _inputLength || _chunks[_j].Type != ChunkType.Text)
             {
@@ -592,13 +551,9 @@ namespace dotless.Core.Parser
                     return null;
             }
 
-            while (_chunks[_j].Value.Length > (startingPosition + x) && (char.IsLetterOrDigit(Current()) || Current() == '_' || Current() == '-' || (allowSlashDot && Current() == '\\')))
+            while (_chunks[_j].Value.Length > (startingPosition + x) && (char.IsLetterOrDigit(Current()) || Current() == '_' || Current() == '-'))
             {
                 x++;
-                if (allowSlashDot && _chunks[_j].Value.Length > (startingPosition + x) && Current() == '.')
-                {
-                    x++;
-                }
             }
 
             if (x > requiredLength)
@@ -953,14 +908,14 @@ namespace dotless.Core.Parser
                 {
                     if  (chunk._builder != null)
                     {
-                        ReadOnlyMemory<char> val = chunk._builder.ToMemory();
+                        ReadOnlyMemory<char> val = chunk._builder.ToString().AsMemory();
                         chunk._builder = null;
                         chunk.Value = val;
                     }
 
                     all.Add(chunk.Value);
                 }
-                return all.ToMemory();
+                return all.ToString().AsMemory();
             }
         }
 

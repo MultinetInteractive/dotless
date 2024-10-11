@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using dotless.Core.Parser.Infrastructure;
+﻿using dotless.Core.Parser.Infrastructure;
 using dotless.Core.Parser.Infrastructure.Nodes;
 
 namespace dotless.Core.Parser.Functions
@@ -9,7 +7,7 @@ namespace dotless.Core.Parser.Functions
     {
         protected override Node Evaluate(Env env)
         {
-            return new TextNode("default()".AsMemory());
+            return new TextNode("default()");
         }
     }
 }

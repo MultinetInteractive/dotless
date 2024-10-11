@@ -1,14 +1,13 @@
-﻿namespace dotless.Core.Parser.Tree
+namespace dotless.Core.Parser.Tree
 {
-    using System;
     using Infrastructure;
     using Infrastructure.Nodes;
 
     public class Script : Node
     {
-        public ReadOnlyMemory<char> Expression { get; set; }
+        public string Expression { get; set; }
 
-        public Script(ReadOnlyMemory<char> script)
+        public Script(string script)
         {
             Expression = script;
         }
@@ -19,7 +18,7 @@
 
         public override Node Evaluate(Env env)
         {
-            return new TextNode("[script unsupported]".AsMemory());
+            return new TextNode("[script unsupported]");
         }
     }
 }

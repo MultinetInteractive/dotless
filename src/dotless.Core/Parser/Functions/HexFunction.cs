@@ -1,6 +1,5 @@
 ﻿namespace dotless.Core.Parser.Functions
 {
-    using System;
     using Exceptions;
     using Infrastructure;
     using Infrastructure.Nodes;
@@ -17,7 +16,7 @@
 
             number.Value = Clamp(number.Value, 255, 0);
 
-            return new TextNode(((int)number.Value).ToString("X2").AsMemory());
+            return new TextNode(((int)number.Value).ToString("X2"));
         }
 
         private static double Clamp(double value, double max, double min)

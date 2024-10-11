@@ -7,7 +7,7 @@
     {
         public Match Match { get; set; }
 
-        public RegexMatchResult(Match match) : base(match.Value.AsMemory())
+        public RegexMatchResult(Match match) : base(match.Value)
         {
             Match = match;
         }

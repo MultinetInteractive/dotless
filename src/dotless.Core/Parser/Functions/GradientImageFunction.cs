@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 
 namespace dotless.Core.Parser.Functions
 {
@@ -101,7 +101,7 @@ namespace dotless.Core.Parser.Functions
                 AddToCache(colorDefs, imageUrl);
             }
             
-            return new Url(new TextNode(imageUrl.AsMemory()));
+            return new Url(new TextNode(imageUrl));
         }
 
         private byte[] GetImageData(ColorPoint[] points)

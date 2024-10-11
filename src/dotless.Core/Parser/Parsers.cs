@@ -40,7 +40,6 @@ namespace dotless.Core.Parser
 {
     using System.Collections.Generic;
     using System.Linq;
-    using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices.ComTypes;
     using dotless.Core.Parser.Functions;
     using Exceptions;
@@ -323,12 +322,10 @@ namespace dotless.Core.Parser
         //
         public Assignment Assignment(Parser parser)
         {
-            var memo = Remember(parser);
-            var key = parser.Tokenizer.MatchWord();
+            var key = parser.Tokenizer.Match(@"\w+(?=\s?=)");
 
             if (!key || !parser.Tokenizer.Match('='))
             {
-                Recall(parser, memo);
                 return null;
             }
 
@@ -385,7 +382,7 @@ namespace dotless.Core.Parser
 
             if (!value)
             {
-                value = parser.Tokenizer.MatchAny(@"[^\)""']*") || new TextNode(ReadOnlyMemory<char>.Empty);
+                value = parser.Tokenizer.MatchAny(@"[^\)""']*") || new TextNode("");
             }
 
             Expect(parser, ')');
@@ -450,12 +447,8 @@ namespace dotless.Core.Parser
                     return null;
                 }
 
-                var varName = new Memory<char>(new char[variableName.Value.Length + 1]);
-                varName.Span[0] = '@';
-                variableName.Value.CopyTo(varName.Slice(1));
-
                 parser.Tokenizer.Advance(1);
-                return NodeProvider.Variable(varName, parser.Tokenizer.GetNodeLocation(index));
+                return NodeProvider.Variable(("@" + variableName.Value.ToString()).AsMemory(), parser.Tokenizer.GetNodeLocation(index));
             }
 
             return null;
@@ -660,7 +653,23 @@ namespace dotless.Core.Parser
                 return null;
             }
 
-            return NodeProvider.Script(script.Value, parser.Tokenizer.GetNodeLocation(index));
+            return NodeProvider.Script(script.Value.ToString(), parser.Tokenizer.GetNodeLocation(index));
+        }
+
+
+        //
+        // The variable part of a variable definition. Used in the `rule` parser
+        //
+        //     @fink:
+        //
+        public string VariableName(Parser parser)
+        {
+            var variable = Variable(parser);
+
+            if (variable != null)
+                return variable.Name.ToString();
+
+            return null;
         }
 
         //
@@ -753,7 +762,7 @@ namespace dotless.Core.Parser
                 const string balancedParenthesesRegex = @"\([^()]*(?>(?>(?'open'\()[^()]*)*(?>(?'-open'\))[^()]*)*)+(?(open)(?!))\)";
 
                 var argumentList = parser.Tokenizer.Match(balancedParenthesesRegex);
-                bool argumentListIsSemicolonSeparated = argumentList != null && argumentList.Value.Span.IndexOf(';') >= 0;
+                bool argumentListIsSemicolonSeparated = argumentList != null && argumentList.Value.ToString().Contains(';');
 
                 char expectedSeparator = argumentListIsSemicolonSeparated ? ';' : ',';
 
@@ -1282,7 +1291,7 @@ namespace dotless.Core.Parser
             if (!parser.Tokenizer.Match('['))
                 return null;
 
-            Node key = InterpolatedVariable(parser) || parser.Tokenizer.MatchKeyword(allowSlashDot: true) || Quoted(parser);
+            Node key = InterpolatedVariable(parser) || parser.Tokenizer.Match(@"(\\.|[a-z0-9_-])+", true) || Quoted(parser);
 
             if (!key)
             {
@@ -1290,7 +1299,7 @@ namespace dotless.Core.Parser
             }
 
             Node op = parser.Tokenizer.Match(@"[|~*$^]?=");
-            Node val = Quoted(parser) || parser.Tokenizer.MatchKeyword();
+            Node val = Quoted(parser) || parser.Tokenizer.Match(@"[\w-]+");
 
             Expect(parser, ']');
 
@@ -1379,7 +1388,7 @@ namespace dotless.Core.Parser
                 {
                     value = Font(parser);
                 }
-                else if (MatchesProperty("filter".AsSpan(), name))
+                else if (MatchesProperty("filter", name.ToString()))
                 {
                     value = FilterExpressionList(parser) || Value(parser);
                 }
@@ -1424,33 +1433,14 @@ namespace dotless.Core.Parser
             return null;
         }
 
-        private bool MatchesProperty(ReadOnlySpan<char> expectedPropertyName, ReadOnlyMemory<char> actualPropertyName)
+        private bool MatchesProperty(string expectedPropertyName, string actualPropertyName)
         {
-            if (expectedPropertyName.Equals(actualPropertyName.Span, StringComparison.Ordinal))
+            if (string.Equals(expectedPropertyName, actualPropertyName))
             {
                 return true;
             }
 
-
-            //check if it matches format -[\w]+-{propertyname}, like '-foo-barproperty'
-            int i = 0;
-
-            if (i < actualPropertyName.Length && actualPropertyName.Span[0] == '-')
-            {
-                i++;
-            }
-
-            while(i < actualPropertyName.Length && (char.IsLetterOrDigit(actualPropertyName.Span[i]) || char.IsLetterOrDigit('_')))
-            {
-                i++;
-            }
-
-            if(i < actualPropertyName.Length && actualPropertyName.Span[0] == '-')
-            {
-                i++;
-            }
-
-            return i < actualPropertyName.Length && actualPropertyName.Slice(i).Span.Equals(expectedPropertyName, StringComparison.Ordinal);
+            return Regex.IsMatch(actualPropertyName, string.Format(@"-(\w+)-{0}", expectedPropertyName));
         }
 
         private CssFunctionList FilterExpressionList(Parser parser)
@@ -1642,64 +1632,46 @@ namespace dotless.Core.Parser
             var nonVendorSpecificName = name;
             var dashIndex = 0;
 
-            bool startedWithAt = false;
             if (name.Span.StartsWith("@-".AsSpan()) && (dashIndex = name.Slice(2).Span.IndexOf('-')) > 0)
             {
                 //+3 is built up of 2 from the slice above and then we want everything after the -
-                nonVendorSpecificName = name.Slice(dashIndex + 3);
-                startedWithAt = true;
-            }
-            else if(name.Span.StartsWith("@".AsSpan()))
-            {
-                nonVendorSpecificName = name.Slice(1);
-                startedWithAt = true;
+                nonVendorSpecificName = ("@" + name.Slice(dashIndex + 3).ToString()).AsMemory();
             }
 
-
-            if (startedWithAt)
+            switch (nonVendorSpecificName.ToString())
             {
-                bool IsEquals(string str)
-                {
-                    return nonVendorSpecificName.Span.Equals(str.AsSpan(), StringComparison.Ordinal);
-                }
-
-                if (
-                    IsEquals("font-face") ||
-                    IsEquals("viewport") ||
-                    IsEquals("top-left") ||
-                    IsEquals("top-left-corner") ||
-                    IsEquals("top-center") ||
-                    IsEquals("top-right") ||
-                    IsEquals("top-right-corner") ||
-                    IsEquals("bottom-left") ||
-                    IsEquals("bottom-left-corner") ||
-                    IsEquals("bottom-center") ||
-                    IsEquals("bottom-right") ||
-                    IsEquals("bottom-right-corner") ||
-                    IsEquals("left-top") ||
-                    IsEquals("left-middle") ||
-                    IsEquals("left-bottom") ||
-                    IsEquals("right-top") ||
-                    IsEquals("right-middle") ||
-                    IsEquals("right-bottom")
-                    )
-                {
+                case "@font-face":
                     hasBlock = true;
-                }
-                else if (
-                    IsEquals("page") ||
-                    IsEquals("document") ||
-                    IsEquals("supports")
-                    )
-                {
+                    break;
+                case "@page":
+                case "@document":
+                case "@supports":
                     hasBlock = true;
                     hasIdentifier = true;
-                }
-                else if (IsEquals("keyframes"))
-                {
+                    break;
+                case "@viewport":
+                case "@top-left":
+                case "@top-left-corner":
+                case "@top-center":
+                case "@top-right":
+                case "@top-right-corner":
+                case "@bottom-left":
+                case "@bottom-left-corner":
+                case "@bottom-center":
+                case "@bottom-right":
+                case "@bottom-right-corner":
+                case "@left-top":
+                case "@left-middle":
+                case "@left-bottom":
+                case "@right-top":
+                case "@right-middle":
+                case "@right-bottom":
+                    hasBlock = true;
+                    break;
+                case "@keyframes":
                     isKeyFrame = true;
                     hasIdentifier = true;
-                }
+                    break;
             }
 
             ReadOnlyMemory<char> identifier = ReadOnlyMemory<char>.Empty;
