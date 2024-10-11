@@ -1,5 +1,6 @@
-namespace dotless.Core.Parser.Tree
+﻿namespace dotless.Core.Parser.Tree
 {
+    using System;
     using Infrastructure;
     using Infrastructure.Nodes;
 
@@ -18,7 +19,7 @@ namespace dotless.Core.Parser.Tree
 
         public override Node Evaluate(Env env)
         {
-            return new TextNode("[script unsupported]");
+            return new TextNode("[script unsupported]".AsMemory());
         }
     }
 }

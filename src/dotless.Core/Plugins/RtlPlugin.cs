@@ -268,7 +268,7 @@
             
                     if (valueChanged)
                     {
-                        return new Rule(rule.Name, new TextNode(content)).ReducedFrom<Rule>(rule);
+                        return new Rule(rule.Name, new TextNode(content.AsMemory())).ReducedFrom<Rule>(rule);
                     }
                 }
 

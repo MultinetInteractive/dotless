@@ -16,7 +16,7 @@
             string base64 = ConvertFileToBase64(filename);
             string mimeType = GetMimeType(filename);
 
-            return new TextNode(string.Format("url(\"data:{0};base64,{1}\")", mimeType, base64));
+            return new TextNode(string.Format("url(\"data:{0};base64,{1}\")", mimeType, base64).AsMemory());
         }
 
         private string GetDataUriFilename()

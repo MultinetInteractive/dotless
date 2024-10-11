@@ -322,10 +322,12 @@ namespace dotless.Core.Parser
         //
         public Assignment Assignment(Parser parser)
         {
-            var key = parser.Tokenizer.Match(@"\w+(?=\s?=)");
+            var memo = Remember(parser);
+            var key = parser.Tokenizer.MatchWord();
 
             if (!key || !parser.Tokenizer.Match('='))
             {
+                Recall(parser, memo);
                 return null;
             }
 
@@ -382,7 +384,7 @@ namespace dotless.Core.Parser
 
             if (!value)
             {
-                value = parser.Tokenizer.MatchAny(@"[^\)""']*") || new TextNode("");
+                value = parser.Tokenizer.MatchAny(@"[^\)""']*") || new TextNode(ReadOnlyMemory<char>.Empty);
             }
 
             Expect(parser, ')');
@@ -1291,7 +1293,7 @@ namespace dotless.Core.Parser
             if (!parser.Tokenizer.Match('['))
                 return null;
 
-            Node key = InterpolatedVariable(parser) || parser.Tokenizer.Match(@"(\\.|[a-z0-9_-])+", true) || Quoted(parser);
+            Node key = InterpolatedVariable(parser) || parser.Tokenizer.MatchKeyword(allowSlashDot: true) || Quoted(parser);
 
             if (!key)
             {
@@ -1299,7 +1301,7 @@ namespace dotless.Core.Parser
             }
 
             Node op = parser.Tokenizer.Match(@"[|~*$^]?=");
-            Node val = Quoted(parser) || parser.Tokenizer.Match(@"[\w-]+");
+            Node val = Quoted(parser) || parser.Tokenizer.MatchKeyword();
 
             Expect(parser, ']');
 

@@ -34,7 +34,7 @@ using System.Text;
             Quote = value.Span[0];
         }
 
-        public Quoted(string value, bool escaped)
+        public Quoted(ReadOnlyMemory<char> value, bool escaped)
             : base(value)
         {
             Escaped = escaped;
@@ -58,7 +58,7 @@ using System.Text;
         {
             if (Escaped)
             {
-                return UnescapeContents().AsMemory();
+                return unescapeContentsMem();
             }
 
             var list = new MemList();
@@ -112,5 +112,35 @@ using System.Text;
         {
             return _unescape.Replace(Value.ToString(), @"$1$2");
         }
+
+        public ReadOnlyMemory<char> unescapeContentsMem()
+        {
+            var outBuffer = new Memory<char>(new char[Value.Length]);
+            int outLength = 0;
+
+            bool GetChar(int i, out char c)
+            {
+                if (i >= 0 && i < Value.Length)
+                {
+                    c = Value.Span[i];
+                    return true;
+                }
+                c = ' ';
+                return false;
+            }
+
+            for (int i = 0; i < Value.Length; i++)
+            {
+                if (GetChar(i, out var current) && current == '\\' && (!GetChar(i - 1, out var prev) || prev != '\\') && GetChar(i + 1, out var next) && (next == '\'' || next == '"'))
+                {
+                    continue;
+                }
+                outBuffer.Span[outLength++] = Value.Span[i];
+            }
+
+            return outBuffer.Slice(0, outLength);
+        }
+
+
     }
 }
