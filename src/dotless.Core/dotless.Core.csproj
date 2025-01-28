@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net45;net461;net47;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net48;netstandard2.0</TargetFrameworks>
     <Description>Dynamic CSS for .net</Description>
     <Company>dotless project</Company>
     <Product>dotless</Product>
@@ -12,22 +12,11 @@
   </PropertyGroup>        
   
   <ItemGroup>
-    <PackageReference Include="Microsoft.DotNet.Analyzers.Compatibility" Version="0.2.12-alpha" PrivateAssets="All" />    
+    <PackageReference Include="Microsoft.DotNet.Analyzers.Compatibility" Version="0.2.12-alpha" PrivateAssets="All" />
+    <PackageReference Include="System.Memory" Version="4.6.0" />    
   </ItemGroup>         
-  
-  <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection">
-      <Version>1.1.1</Version>
-    </PackageReference>
-  </ItemGroup>    
-  
-  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection">
-      <Version>1.1.1</Version>
-    </PackageReference>
-  </ItemGroup>  
-  
-  <ItemGroup Condition="'$(TargetFramework)' == 'net47'">
+    
+  <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
     <PackageReference Include="Microsoft.Extensions.DependencyInjection">
       <Version>2.1.1</Version>
     </PackageReference>

@@ -1,4 +1,4 @@
-namespace dotless.Core.Parser.Tree
+﻿namespace dotless.Core.Parser.Tree
 {
     using System;
     using System.Collections.Generic;
@@ -145,7 +145,6 @@ namespace dotless.Core.Parser.Tree
             {"skyblue", 0x87ceeb},
             {"slateblue", 0x6a5acd},
             {"slategray", 0x708090},
-            {"slategrey", 0x708090},
             {"snow", 0xfffafa},
             {"springgreen", 0x00ff7f},
             {"steelblue", 0x4682b4},
@@ -163,7 +162,7 @@ namespace dotless.Core.Parser.Tree
         };
 
         private static readonly Dictionary<int, string> Html4ColorsReverse =
-            Html4Colors.GroupBy(kvp => kvp.Value).ToDictionary(g => g.Key, g => g.First().Key);
+            Html4Colors.ToDictionary(g => g.Value, g => g.Key);
 
         public static Color From(string keywordOrHex)
         {
@@ -202,39 +201,78 @@ namespace dotless.Core.Parser.Tree
 
         public static Color FromHex(string hex)
         {
-            hex = hex.TrimStart('#');
+            var hexSpan = hex.AsSpan();
+
+            hexSpan = hexSpan.TrimStart('#');
             double[] rgb;
             var alpha = 1.0;
-            var text = '#' + hex;
-
-            if (hex.Length == 8)
+            string text = hex;
+            if (!text.StartsWith("#"))
             {
-                rgb = ParseRgb(hex.Substring(2));
-                alpha = Parse(hex.Substring(0, 2))/255.0;
+                text = "#" + text;
             }
-            else if (hex.Length == 6)
+
+            if (hexSpan.Length == 8)
             {
-                rgb = ParseRgb(hex);
+                rgb = ParseRgb(hexSpan.Slice(2));
+                alpha = HexStringToInt(hexSpan.Slice(0, 2))/255.0;
+            }
+            else if (hexSpan.Length == 6)
+            {
+                rgb = ParseRgb(hexSpan);
             }
             else
             {
-                rgb = hex.ToCharArray().Select(c => Parse("" + c + c)).ToArray();
+                rgb = new double[hexSpan.Length];
+                for (int i = 0; i < hexSpan.Length; i++)
+                {
+                    rgb[i] = HexCharToInt(hexSpan[i]) * 16 + HexCharToInt(hexSpan[i]);
+                }
             }
 
             return new Color(rgb, alpha, text);
         }
 
-        private static double[] ParseRgb(string hex)
+        static int HexCharToInt(char hexChar)
         {
-            return Enumerable.Range(0, 3)
-                .Select(i => hex.Substring(i*2, 2))
-                .Select(Parse)
-                .ToArray();
+            hexChar = char.ToUpper(hexChar);
+
+            return (int)hexChar < (int)'A' ?
+                ((int)hexChar - (int)'0') :
+                10 + ((int)hexChar - (int)'A');
         }
 
-        private static double Parse(string hex)
+        static int HexStringToInt(ReadOnlySpan<char> hexString)
         {
-            return int.Parse(hex, NumberStyles.HexNumber);
+            int result = 0;
+            for (int i = 0; (i < hexString.Length); i++)
+            {
+                var multiplier = hexString.Length - i - 1;
+
+                if (multiplier > 0)
+                {
+                    result += HexCharToInt(hexString[i]) * 16 * multiplier;
+                }
+                else
+                {
+                    result += HexCharToInt(hexString[i]);
+                }
+
+            }
+
+            return result;
+        }
+
+        private static double[] ParseRgb(ReadOnlySpan<char> hexSpan)
+        {
+            double[] rgb = new double[3];
+
+            foreach (var i in Enumerable.Range(0, 3))
+            {
+                rgb[i] = HexStringToInt(hexSpan.Slice(i * 2, 2));
+            }
+
+            return rgb;
         }
 
         private readonly string _text;
@@ -251,23 +289,33 @@ namespace dotless.Core.Parser.Tree
         }
 
         public Color(string hex) {
-            hex = hex.TrimStart('#');
+            var hexSpan = hex.AsSpan();
+            hexSpan = hexSpan.TrimStart('#');
             double[] rgb;
             var alpha = 1.0;
-            var text = '#' + hex;
-
-            if (hex.Length == 8)
+            
+            string text = hex;
+            if (!text.StartsWith("#"))
             {
-                rgb = ParseRgb(hex.Substring(2));
-                alpha = Parse(hex.Substring(0, 2))/255.0;
+                text = "#" + text;
             }
-            else if (hex.Length == 6)
+
+            if (hexSpan.Length == 8)
             {
-                rgb = ParseRgb(hex);
+                rgb = ParseRgb(hexSpan.Slice(2));
+                alpha = HexStringToInt(hexSpan.Slice(0, 2)) / 255.0;
+            }
+            else if (hexSpan.Length == 6)
+            {
+                rgb = ParseRgb(hexSpan);
             }
             else
             {
-                rgb = hex.ToCharArray().Select(c => Parse("" + c + c)).ToArray();
+                rgb = new double[hexSpan.Length];
+                for (int i = 0; i < hexSpan.Length; i++)
+                {
+                    rgb[i] = HexCharToInt(hexSpan[i]) * 16 + HexCharToInt(hexSpan[i]);
+                }
             }
 
             R = rgb[0];
@@ -277,6 +325,8 @@ namespace dotless.Core.Parser.Tree
 
             _text = text;
         }
+
+        
 
         public Color(IEnumerable<Number> rgb, Number alpha) {
             RGB = rgb.Select(d => d.Normalize()).ToArray();

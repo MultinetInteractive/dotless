@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace dotless.Core.Parser
 {
@@ -382,7 +382,7 @@ namespace dotless.Core.Parser
         private Regex GetRegex(string pattern, RegexOptions options)
         {
             if (!regexCache.ContainsKey(pattern))
-                regexCache.Add(pattern, new Regex(@"\G" + pattern, options));
+                regexCache.Add(pattern, new Regex(@"\G" + pattern, options | RegexOptions.Compiled));
 
             return regexCache[pattern];
         }
