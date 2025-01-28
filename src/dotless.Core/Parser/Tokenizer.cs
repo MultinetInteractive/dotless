@@ -382,7 +382,7 @@ namespace dotless.Core.Parser
         private Regex GetRegex(string pattern, RegexOptions options)
         {
             if (!regexCache.ContainsKey(pattern))
-                regexCache.Add(pattern, new Regex(@"\G" + pattern, options | RegexOptions.Compiled));
+                regexCache.Add(pattern, new Regex(@"\G" + pattern, options));
 
             return regexCache[pattern];
         }
