@@ -1,5 +1,6 @@
 ﻿namespace dotless.Core.Parser.Functions
 {
+    using System;
     using Infrastructure.Nodes;
     using Tree;
 
@@ -12,14 +13,15 @@
 
         protected override Node EditColor(Color color, Number number)
         {
-            var alpha = number.Value/100d;
+            var alpha = Math.Round(number.Value/100d, 2);
+
 
             return new Color(color.R, color.G, color.B, ProcessAlpha( color.Alpha, alpha));
         }
 
         protected virtual double ProcessAlpha(double originalAlpha, double newAlpha)
         {
-            return originalAlpha + newAlpha;
+            return Math.Round(originalAlpha + newAlpha, 2);
         }
     }
 
